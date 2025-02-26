@@ -25,7 +25,10 @@ SECRET_KEY = 'django-insecure-&&agd53()b1avuinha(52u7z%n$*g#x#jf&yku7p2en+3uwi69
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    '2f521d3645d74cdab041e37bb264d2b3.vfs.cloud9.us-east-1.amazonaws.com',
+    '127.0.0.1',
+    'localhost']
 
 
 # Application definition
@@ -41,6 +44,10 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
 ]
+CSRF_TRUSTED_ORIGINS = [
+    'https://2f521d3645d74cdab041e37bb264d2b3.vfs.cloud9.us-east-1.amazonaws.com'
+]
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

@@ -1,0 +1,16 @@
+<!-- templates/user_management/register.html -->
+
+<h2>Register</h2>
+
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+
+    <!-- Medical History Input -->
+    <label for="medical_history">Medical History:</label>
+    <textarea id="medical_history" name="medical_history" placeholder="E.g., Diabetes, Hypertension"></textarea>
+
+    <button type="submit">Register</button>
+</form>
+
+<p>Already have an account? <a href="{% url 'login' %}">Login here</a></p>

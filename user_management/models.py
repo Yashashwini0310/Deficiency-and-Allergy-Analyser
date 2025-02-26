@@ -1,0 +1,25 @@
+from django.contrib.auth.models import User
+from django.db import models
+
+class UserProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    symptoms = models.TextField(blank=True, null=True)  # Store symptoms
+    severity_level = models.IntegerField(blank=True, null=True)  # Add this line  # Store severity
+    medical_history = models.TextField(blank=True, null=True)  # Store medical history
+
+    def __str__(self):
+        return self.user.username
+
+class Allergy(models.Model):
+    name = models.CharField(max_length=100)
+    description = models.TextField()
+
+    def __str__(self):
+        return self.name
+
+class Deficiency(models.Model):
+    name = models.CharField(max_length=100)
+    description = models.TextField()
+
+    def __str__(self):
+        return self.name

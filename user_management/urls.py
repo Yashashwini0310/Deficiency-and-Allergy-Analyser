@@ -1,6 +1,11 @@
 from django.urls import path
-from .views import user_register, user_login, user_logout, dashboard, UserProfileAPIView, AllergyListAPIView, DeficiencyListAPIView, SymptomSubmissionAPIView
+from .views import (
+    user_register, user_login, user_logout, dashboard, 
+    UserProfileAPIView, AllergyListAPIView, DeficiencyListAPIView, 
+    SymptomSubmissionAPIView, api_user_login
+)
 from . import views
+from rest_framework.authtoken.views import obtain_auth_token  # Import this
 from rest_framework.routers import DefaultRouter
 urlpatterns = [
     path('register/', user_register, name='register'),
@@ -21,6 +26,7 @@ urlpatterns = [
     path('deficiencies/<int:pk>/delete/', views.deficiency_delete, name='deficiency_delete'),
     
     #API URLs
+    path('api/login/', api_user_login, name='api-login'),  # 🔹 Updated function name    path('user-profile/', UserProfileAPIView.as_view(), name='user-profile-api'),
     path('user-profile/', UserProfileAPIView.as_view(), name='user-profile-api'),
     path('allergies/', AllergyListAPIView.as_view(), name='allergy-list-api'),
     path('deficiencies/', DeficiencyListAPIView.as_view(), name='deficiency-list-api'),

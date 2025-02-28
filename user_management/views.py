@@ -14,7 +14,6 @@ from rest_framework.decorators import api_view, permission_classes
 from .serializers import UserProfileSerializer, AllergySerializer, DeficiencySerializer
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
-from django.contrib.auth import authenticate
 from django.http import JsonResponse
 from rest_framework.authtoken.models import Token
 import json
@@ -226,25 +225,10 @@ class DeficiencyListAPIView(generics.ListCreateAPIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
+class ProtectedAPIView(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        return Response({"message": "You are authenticated!"}, status=200)
 #test endpoint for symptom submission
-class SymptomSubmissionAPIView(APIView):
-    permission_classes = [IsAuthenticated]  # Require authentication
-
-    def post(self, request):
-        symptoms = request.data.get("symptoms", [])
-
-        if not symptoms:
-            return Response({"error": "Symptoms are required"}, status=status.HTTP_400_BAD_REQUEST)
-
-        # Basic logic: Map symptoms to possible conditions (replace with real logic)
-        possible_conditions = []
-        if "fever" in symptoms:
-            possible_conditions.append("Flu")
-        if "headache" in symptoms:
-            possible_conditions.append("Migraine")
-        if "fatigue" in symptoms:
-            possible_conditions.append("Anemia")
-        if not possible_conditions:
-            possible_conditions.append("Unknown Condition")
-
-        return Response({"possible_conditions": possible_conditions}, status=status.HTTP_200_OK)

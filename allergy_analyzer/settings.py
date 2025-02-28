@@ -43,9 +43,11 @@ INSTALLED_APPS = [
     'user_management.apps.UserManagementConfig',
     'rest_framework',
     'rest_framework.authtoken',
+    'corsheaders',
 ]
 CSRF_TRUSTED_ORIGINS = [
-    'https://2f521d3645d74cdab041e37bb264d2b3.vfs.cloud9.us-east-1.amazonaws.com'
+    "https://2f521d3645d74cdab041e37bb264d2b3.vfs.cloud9.us-east-1.amazonaws.com",
+    "http://2f521d3645d74cdab041e37bb264d2b3.vfs.cloud9.us-east-1.amazonaws.com"
 ]
 
 
@@ -57,8 +59,13 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
 ]
 
+CORS_ALLOWED_ORIGINS = [
+    "https://2f521d3645d74cdab041e37bb264d2b3.vfs.cloud9.us-east-1.amazonaws.com"
+]#it's better to specify allowed origins
+CORS_ALLOW_CREDENTIALS = True #app requires authenticated API requests, so CORS must allow credentials.
 ROOT_URLCONF = 'allergy_analyzer.urls'
 
 TEMPLATES = [
@@ -139,6 +146,6 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.TokenAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.AllowAny',
+        'rest_framework.permissions.IsAuthenticated',
     ],
 }

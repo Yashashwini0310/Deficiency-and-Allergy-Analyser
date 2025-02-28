@@ -31,4 +31,5 @@ urlpatterns = [
     path('allergies/', AllergyListAPIView.as_view(), name='allergy-list-api'),
     path('deficiencies/', DeficiencyListAPIView.as_view(), name='deficiency-list-api'),
     path('symptoms/', SymptomSubmissionAPIView.as_view(), name='symptoms-submit-api'),
+    path('api/token/', obtain_auth_token, name='api-token'),
 ]

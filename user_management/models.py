@@ -11,8 +11,8 @@ class UserProfile(models.Model):
         return self.user.username
 
 class Allergy(models.Model):
-    name = models.CharField(max_length=100)
-    description = models.TextField()
+    name = models.CharField(max_length=100, unique=True)
+    description = models.TextField(blank=True, null=True)
 
     def __str__(self):
         return self.name

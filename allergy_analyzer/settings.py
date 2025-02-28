@@ -28,7 +28,8 @@ DEBUG = True
 ALLOWED_HOSTS = [
     '2f521d3645d74cdab041e37bb264d2b3.vfs.cloud9.us-east-1.amazonaws.com',
     '127.0.0.1',
-    'localhost']
+    'localhost',
+    '0.0.0.0']
 
 
 # Application definition

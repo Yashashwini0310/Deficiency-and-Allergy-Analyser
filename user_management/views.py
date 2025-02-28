@@ -34,6 +34,8 @@ def api_user_login(request):  # 🔹 Renamed function
             return JsonResponse({"error": "Invalid credentials"}, status=400)
     
     return JsonResponse({"error": "Invalid request method"}, status=405)
+    
+@method_decorator(csrf_exempt, name='dispatch')
 class SymptomSubmissionAPIView(APIView):
     authentication_classes = [TokenAuthentication]  # 🔹 Add this line
     permission_classes = [IsAuthenticated]  # Requires authentication
@@ -92,8 +94,10 @@ def user_logout(request):
     logout(request)
     return redirect('login')
 
+
 # Dashboard View (Symptom Analysis with Severity and medical history)
 @login_required
+@csrf_exempt
 def dashboard(request):
     result = None
     medical_history = ""
@@ -185,6 +189,7 @@ def deficiency_delete(request, pk):
         return redirect('deficiency_list')
     return render(request, 'user_management/deficiency_confirm_delete.html', {'deficiency': deficiency})
 
+@method_decorator(csrf_exempt, name='dispatch')
 # API to fetch and update user profile (including symptoms & medical history)
 class UserProfileAPIView(APIView):
     authentication_classes = [TokenAuthentication]

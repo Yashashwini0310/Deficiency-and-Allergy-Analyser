@@ -30,5 +30,8 @@ def determine_severity(condition):
         "Migraine": "Severe",
         "Vitamin D Deficiency": "Moderate",
         "Sinus Allergy": "Mild",
+        "Chest Pain": "High",
+        "Asthma": "Severe",
+        "Heart Disease": "Severe"
     }
     return severity_map.get(condition, "Mild")  # Default severity if condition not found

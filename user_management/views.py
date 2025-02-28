@@ -42,22 +42,26 @@ class SymptomSubmissionAPIView(APIView):
 
     def post(self, request):
         symptoms = request.data.get("symptoms", [])
-
+        medical_history = request.data.get("medical_history", [])
         if not symptoms:
             return Response({"error": "Symptoms are required"}, status=status.HTTP_400_BAD_REQUEST)
-
+        # Call analyze_symptoms() to get conditions, severity, and recommendations
+        result = analyze_symptoms(symptoms, medical_history)
         # Example logic: Map symptoms to possible conditions
-        possible_conditions = []
-        if "fever" in symptoms:
-            possible_conditions.append("Flu")
-        if "headache" in symptoms:
-            possible_conditions.append("Migraine")
-        if "fatigue" in symptoms:
-            possible_conditions.append("Anemia")
-        if not possible_conditions:
-            possible_conditions.append("Unknown Condition")
+        # possible_conditions = []
+        # if "fever" in symptoms:
+        #     possible_conditions.append("Flu")
+        # if "headache" in symptoms:
+        #     possible_conditions.append("Migraine")
+        # if "fatigue" in symptoms:
+        #     possible_conditions.append("Anemia")
+        # if "chest pain" in symptoms:
+        #     possible_conditions.append("Heart Disease")
+        # if not possible_conditions:
+        #     possible_conditions.append("Unknown Condition")
 
-        return Response({"possible_conditions": possible_conditions}, status=status.HTTP_200_OK)
+        # return Response({"possible_conditions": possible_conditions}, status=status.HTTP_200_OK)
+        return Response(result, status=status.HTTP_200_OK)
 
 # User Registration View
 def user_register(request):
@@ -97,23 +101,40 @@ def user_logout(request):
 
 # Dashboard View (Symptom Analysis with Severity and medical history)
 @login_required
-@csrf_exempt
 def dashboard(request):
     result = None
-    medical_history = ""
+    high_severity = False
+    recommendation = None
     if request.method == 'POST':
-        symptoms = request.POST.get('symptoms', '')
-        medical_history = request.POST.get('medical_history', '')
-        print(f"Received symptoms: {symptoms}")
-        print(f"Received medical history: {medical_history}")
-        if symptoms:
-            result = analyze_symptoms(symptoms.split(','), medical_history)
-            #save symptoms and medical history to user profile
-            profile, _ = UserProfile.objects.get_or_create(user=request.user)
-            profile.symptoms = symptoms
-            profile.medical_history = medical_history
-            profile.save()
-    return render(request, 'user_management/dashboard.html', {'result': result, 'medical_history': medical_history})
+        symptoms = request.POST.get('symptoms', '').split(',')
+        medical_history = request.POST.get('medical_history', '').split(',')
+        print(f"Received symptoms: {symptoms}") #debugging
+        print(f"Received medical history: {medical_history}") #debugging
+        # process the symptoms and medical history
+        analysis_result = analyze_symptoms(symptoms, medical_history)
+        result = analysis_result.get('conditions')
+        high_severity = 'Severe' in analysis_result.get('severity','')
+        recommendation = analysis_result.get('recommendation')
+        print(f"analysis_results: {result}")
+        # # Set the high severity flag for display
+        # if highest_severity in ["High", "Severe"]:
+        #     high_severity = True
+
+    return render(request, 'user_management/dashboard.html', {
+        'result': result,
+        'high_severity': high_severity,
+        'recommendation': recommendation, # Ensure user context is passed
+    })
+    #     if symptoms:
+    #         result = analyze_symptoms(symptoms, medical_history) 
+    #         print(f"Analysis result: {result}")#passes the list 
+    #         high_severity = any(item['severity'] == 'high' for item in result)
+    #         #save symptoms and medical history to user profile
+    #         profile, _ = UserProfile.objects.get_or_create(user=request.user)
+    #         profile.symptoms = symptoms
+    #         profile.medical_history = medical_history
+    #         profile.save()
+    # return render(request, 'user_management/dashboard.html', {'result': result, 'medical_history': medical_history, 'high_severity': high_severity})
 
 # CRUD for Allergy
 @login_required

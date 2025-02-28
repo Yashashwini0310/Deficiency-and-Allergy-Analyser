@@ -156,21 +156,24 @@
 
         <!-- Display Analysis Results -->
         {% if result %}
-            <div class="results">
-                <h3>Possible Conditions:</h3>
-                <ul>
-                    {% for item in result %}
-                        <li>{{ item.condition }} - Severity: <strong>{{ item.severity }}</strong></li>
-                    {% empty %}
-                        <li>No matching conditions found.</li>
-                    {% endfor %}
-                </ul>
+        <div class="results">
+            <h3>Possible Conditions:</h3>
+            <ul>
+                {% for item in result %}
+                    <li>{{ item.condition }} - Severity: <strong>{{ item.severity }}</strong></li>
+                {% empty %}
+                    <li>No matching conditions found.</li>
+                {% endfor %}
+            </ul>
 
-                <!-- Suggest visiting a General Physician if severity is high -->
-                {% if high_severity %}
-                    <p class="warning">⚠️ Your condition severity is high. It is recommended to consult a General Physician.</p>
-                {% endif %}
-            </div>
+            <!-- Suggest visiting a General Physician if severity is high -->
+            {% if high_severity %}
+                <p class="warning">⚠️ Your condition severity is high. It is recommended to consult a General Physician.</p>
+            {% endif %}
+
+            <!-- Display Recommendation -->
+            <p><strong>Recommendation:</strong> {{ recommendation }}</p>
+        </div>
         {% endif %}
 
         <!-- Logout Link -->

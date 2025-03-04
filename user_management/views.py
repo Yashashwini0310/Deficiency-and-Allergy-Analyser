@@ -16,10 +16,54 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from django.http import JsonResponse
 from rest_framework.authtoken.models import Token
+from django.contrib.auth import authenticate
+from django.contrib.auth.decorators import login_required
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
+from django.shortcuts import render
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.permissions import IsAuthenticated
 import json
+import boto3
+import logging
+from django.conf import settings
 
+# AWS Configuration
+AWS_REGION = "us-east-1"
+AWS_LAMBDA_FUNCTION_NAME = "SymptomAnalysisLambda"
+lambda_client = boto3.client("lambda", region_name=AWS_REGION)
+
+# CloudWatch Logger
+logger = logging.getLogger("django")
+
+# unified Lambda Invocation Function
+def invoke_lambda(symptoms, medical_history):
+    payload = {
+        "body": json.dumps({
+            "symptoms": symptoms,
+            "medical_history": medical_history
+        })
+    }
+
+    try:
+        response = lambda_client.invoke(
+            FunctionName=AWS_LAMBDA_FUNCTION_NAME,
+            InvocationType="RequestResponse",
+            Payload=json.dumps(payload)
+        )
+        response_payload = json.loads(response["Payload"].read().decode("utf-8"))
+        return json.loads(response_payload.get("body", "{}"))
+    
+    except Exception as e:
+        logger.error(f"Lambda invocation error: {e}")
+        return {"error": "Failed to process request"}
+
+# ✅ User Login API
 @csrf_exempt
-def api_user_login(request):  # 🔹 Renamed function
+def api_user_login(request):
     if request.method == "POST":
         data = json.loads(request.body)
         username = data.get("username")
@@ -32,36 +76,59 @@ def api_user_login(request):  # 🔹 Renamed function
             return JsonResponse({"token": token.key}, status=200)
         else:
             return JsonResponse({"error": "Invalid credentials"}, status=400)
-    
+
     return JsonResponse({"error": "Invalid request method"}, status=405)
-    
-@method_decorator(csrf_exempt, name='dispatch')
+
+# ✅ Dashboard View (Calls Lambda)
+@login_required
+def dashboard(request):
+    logger.info(f"Dashboard accessed by user: {request.user}")
+    result = None
+    high_severity = False
+    recommendation = None
+
+    if request.method == "POST":
+        symptoms_str = request.POST.get("symptoms", "").strip()
+        medical_history_str = request.POST.get("medical_history", "").strip()
+        
+        # Ensure valid inputs
+        symptoms = [s.strip() for s in symptoms_str.split(",") if s.strip()]
+        medical_history = [m.strip() for m in medical_history_str.split(",") if m.strip()]
+
+        logger.info(f"Received Symptoms: {symptoms}, Medical History: {medical_history}")
+
+        if symptoms:
+            result = invoke_lambda(symptoms, medical_history)
+            high_severity = "Severe" in result.get("severity", "")
+            recommendation = result.get("recommendation")
+
+        logger.info(f"Lambda Result: {result}")
+
+    return render(request, "user_management/dashboard.html", {
+        "result": result,
+        "high_severity": high_severity,
+        "recommendation": recommendation,
+    })
+
+# ✅ API View for Symptom Submission (Calls Lambda)
+@method_decorator(csrf_exempt, name="dispatch")
 class SymptomSubmissionAPIView(APIView):
-    authentication_classes = [TokenAuthentication]  # 🔹 Add this line
-    permission_classes = [IsAuthenticated]  # Requires authentication
+    authentication_classes = [TokenAuthentication] 
+    permission_classes = [IsAuthenticated]
 
     def post(self, request):
         symptoms = request.data.get("symptoms", [])
         medical_history = request.data.get("medical_history", [])
-        if not symptoms:
-            return Response({"error": "Symptoms are required"}, status=status.HTTP_400_BAD_REQUEST)
-        # Call analyze_symptoms() to get conditions, severity, and recommendations
-        result = analyze_symptoms(symptoms, medical_history)
-        # Example logic: Map symptoms to possible conditions
-        # possible_conditions = []
-        # if "fever" in symptoms:
-        #     possible_conditions.append("Flu")
-        # if "headache" in symptoms:
-        #     possible_conditions.append("Migraine")
-        # if "fatigue" in symptoms:
-        #     possible_conditions.append("Anemia")
-        # if "chest pain" in symptoms:
-        #     possible_conditions.append("Heart Disease")
-        # if not possible_conditions:
-        #     possible_conditions.append("Unknown Condition")
 
-        # return Response({"possible_conditions": possible_conditions}, status=status.HTTP_200_OK)
-        return Response(result, status=status.HTTP_200_OK)
+        if not symptoms:
+            logger.warning("API Request Missing Symptoms")
+            return Response({"error": "Symptoms are required"}, status=400)
+
+        # ✅ Invoke Lambda
+        result = invoke_lambda(symptoms, medical_history)
+        logger.info(f"User: {request.user.username} | Symptoms: {symptoms} | Medical History: {medical_history} | Lambda Result: {result}")
+
+        return Response(result, status=200)
 
 # User Registration View
 def user_register(request):
@@ -97,44 +164,6 @@ def user_login(request):
 def user_logout(request):
     logout(request)
     return redirect('login')
-
-
-# Dashboard View (Symptom Analysis with Severity and medical history)
-@login_required
-def dashboard(request):
-    result = None
-    high_severity = False
-    recommendation = None
-    if request.method == 'POST':
-        symptoms = request.POST.get('symptoms', '').split(',')
-        medical_history = request.POST.get('medical_history', '').split(',')
-        print(f"Received symptoms: {symptoms}") #debugging
-        print(f"Received medical history: {medical_history}") #debugging
-        # process the symptoms and medical history
-        analysis_result = analyze_symptoms(symptoms, medical_history)
-        result = analysis_result.get('conditions')
-        high_severity = 'Severe' in analysis_result.get('severity','')
-        recommendation = analysis_result.get('recommendation')
-        print(f"analysis_results: {result}")
-        # # Set the high severity flag for display
-        # if highest_severity in ["High", "Severe"]:
-        #     high_severity = True
-
-    return render(request, 'user_management/dashboard.html', {
-        'result': result,
-        'high_severity': high_severity,
-        'recommendation': recommendation, # Ensure user context is passed
-    })
-    #     if symptoms:
-    #         result = analyze_symptoms(symptoms, medical_history) 
-    #         print(f"Analysis result: {result}")#passes the list 
-    #         high_severity = any(item['severity'] == 'high' for item in result)
-    #         #save symptoms and medical history to user profile
-    #         profile, _ = UserProfile.objects.get_or_create(user=request.user)
-    #         profile.symptoms = symptoms
-    #         profile.medical_history = medical_history
-    #         profile.save()
-    # return render(request, 'user_management/dashboard.html', {'result': result, 'medical_history': medical_history, 'high_severity': high_severity})
 
 # CRUD for Allergy
 @login_required
@@ -258,3 +287,7 @@ class ProtectedAPIView(APIView):
     def get(self, request):
         return Response({"message": "You are authenticated!"}, status=200)
 #test endpoint for symptom submission
+
+#Cloudwatch loggings below
+#ogging to track API requests and errors
+

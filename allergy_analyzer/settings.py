@@ -9,12 +9,16 @@ https://docs.djangoproject.com/en/5.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
-
+import boto3
+from botocore.exceptions import NoCredentialsError
+import logging
+import watchtower 
+from watchtower import CloudWatchLogHandler #this is for cloudwatch logs
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
+AWS_LAMBDA_FUNCTION_NAME = "SymptomAnalysisLambda" #AWS lambda functionname for symptom analysis
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
@@ -150,3 +154,41 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated',
     ],
 }
+
+#below code is for Cloudwatch Integration
+
+AWS_CLOUDWATCH_GROUP = "LogsForAllergyAnalyzer" #log group name
+AWS_CLOUDWATCH_STREAM = "ApplicationLogs"
+AWS_REGION = "us-east-1"
+
+# Initialize Boto3 CloudWatch Logs Client
+boto3_client = boto3.client("logs", region_name=AWS_REGION)
+#configuring logging below
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "watchtower": {
+            "level": "INFO",
+            "class": "watchtower.CloudWatchLogHandler",
+            "log_group": AWS_CLOUDWATCH_GROUP,
+            "stream_name": AWS_CLOUDWATCH_STREAM,
+        },
+    },
+    "loggers": {
+        "django": {
+            "handlers": ["watchtower"],
+            "level": "INFO",
+            "propagate": True,
+        },
+    },
+}
+ # Setup Logging
+try:
+    logging.basicConfig(level=logging.INFO)
+    logger = logging.getLogger("django")
+    logger.addHandler(watchtower.CloudWatchLogHandler(log_group=AWS_CLOUDWATCH_GROUP))
+
+    logger.info("✅ CloudWatch logging configured successfully.")
+except Exception as e:
+    logging.error(f"⚠️ Error configuring CloudWatch logging: {e}")

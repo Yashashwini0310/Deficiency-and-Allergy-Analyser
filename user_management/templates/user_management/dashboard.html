@@ -153,30 +153,61 @@
 
             <button type="submit">Analyze</button>
         </form>
+        
+         <!--Display Analysis Results -->
+        <!--{% if result %}-->
+        <!--<div class="results">-->
+        <!--    <h3>Possible Conditions:</h3>-->
+        <!--    <ul>-->
+        <!--        {% for item in result.conditions %}-->
+        <!--            <li>{{ item.condition }} - Severity: <strong>{{ item.severity_level }}</strong></li>-->
+        <!--        {% empty %}-->
+        <!--            <li>No matching conditions found.</li>-->
+        <!--        {% endfor %}-->
+        <!--    </ul>-->
 
-        <!-- Display Analysis Results -->
+             <!--Display Recommendation -->
+        <!--    <p><strong>Recommendation:</strong> {{ recommendation }}</p>-->
+        <!--    <p style="color: red; font-weight: bold;">-->
+        <!--{{ disclaimer }}-->
+        <!--</p>  <!-- ✅ Shows disclaimer message -->
+        <!--</div>-->
+        <!--{% endif %}-->
+
+         <!--Logout Link -->
         {% if result %}
-        <div class="results">
-            <h3>Possible Conditions:</h3>
-            <ul>
-                {% for item in result %}
-                    <li>{{ item.condition }} - Severity: <strong>{{ item.severity }}</strong></li>
-                {% empty %}
-                    <li>No matching conditions found.</li>
-                {% endfor %}
-            </ul>
-
-            <!-- Suggest visiting a General Physician if severity is high -->
-            {% if high_severity %}
-                <p class="warning">⚠️ Your condition severity is high. It is recommended to consult a General Physician.</p>
+        <div class = "results">
+        <h3>Predicted Conditions:</h3>
+        <ul>
+        {% for condition in result.conditions %}  <!-- ✅ Corrected Loop -->
+            <li></Strong>Possible Conditions:</strong> {{ condition }}</li>
+        {% endfor %}
+        </ul>
+        
+        <p><strong>Your Symptoms:</strong> {{ symptoms }}</p>
+        <h4>Severity Level: {{ severity_level }}</h4>  <!-- ✅ Shows severity -->
+    
+        {% if recommendation %}
+        <h4>Recommendations:</h4>
+        <ul>
+            {% for item in recommendation %}
+                <li>{{ item }}</li>
+            {% endfor %}
+        </ul>
+        <p style="color: red; font-weight: bold;">
+        {{ disclaimer }}
+        </p>
+        {% endif %}
+        {% else %}
+            <div class="results">
+                <p>No analysis performed yet. Please enter your symptoms and medical history.</p>
+            </div>
+           
+        <p style="color: red; font-weight: bold;">
+        {{ disclaimer }}
+        </p>  <!-- ✅ Shows disclaimer message -->
             {% endif %}
 
-            <!-- Display Recommendation -->
-            <p><strong>Recommendation:</strong> {{ recommendation }}</p>
-        </div>
-        {% endif %}
-
-        <!-- Logout Link -->
         <a class="logout" href="{% url 'logout' %}">Logout</a>
     </div>
 

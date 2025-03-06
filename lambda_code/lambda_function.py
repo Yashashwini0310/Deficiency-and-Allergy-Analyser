@@ -1,63 +1,58 @@
 import json
-
-# Define symptom-condition mappings with medical history considerations
-SYMPTOM_CONDITIONS = {
-    "fever": ["Flu", "Viral Infection"],
-    "headache": ["Migraine", "Tension Headache"],
-    "chest pain": ["Heart Disease", "Anxiety"],
-    "sneezing": ["Dust Allergy", "Pollen Allergy"],
-    "itchy skin": ["Eczema", "Food Allergy"],
-    "fatigue": ["Iron Deficiency", "Vitamin B12 Deficiency"],
-    "hives": ["Insect Allergy", "Food Allergy"],
-    "nausea": ["Lactose Intolerance", "Food Sensitivity"],
-    "shortness of breath": ["Asthma", "Pollen Allergy"],
-    "skin rash" : ["skin allergy", "Dust Allergy"],
-    "itching": ["Pollen Allergy", "Dust Allergy"],
-}
-
-MEDICAL_HISTORY_IMPACT = {
-    "diabetes": ["Fatigue", "Slow Healing"],
-    "asthma": ["Breathing Issues", "Chest Pain"],
-    "hypertension": ["Headache", "Dizziness"],
-}
-
-RECOMMENDATIONS = {
-    "Flu": "Drink plenty of fluids and rest.",
-    "Migraine": "Avoid bright lights and get sufficient sleep.",
-    "Anemia": "Increase iron intake through diet or supplements.",
-    "Heart Disease": "Seek medical attention immediately.",
-}
+import data  # Import data.py
 
 def analyze_symptoms(symptoms, medical_history):
-    possible_conditions = set()
+    possible_conditions_details = []
+    overall_severity = "Mild"
+
+    predicted_conditions = set() # Use a set to avoid duplicates, start empty
     recommendations = set()
 
-    # eck symptom-based conditions
-    for symptom in symptoms:
-        conditions = SYMPTOM_CONDITIONS.get(symptom, [])
-        possible_conditions.update(conditions)
-    
-    # check medical history impact
-    for condition, affected_symptoms in MEDICAL_HISTORY_IMPACT.items():
-        if condition in medical_history:
-            for symptom in affected_symptoms:
-                if symptom in symptoms:
-                    possible_conditions.add(condition)
+    # 1. Check MEDICAL HISTORY IMPACT first (prioritize specific conditions)
+    for condition_name, history_data in data.MEDICAL_HISTORY_IMPACT.items():
+        if condition_name.lower() in medical_history: # Case-insensitive match for medical history
+            for symptom_in_history, condition_details in history_data.items():
+                if symptom_in_history.lower() in symptoms: # Case-insensitive match for symptoms
+                    predicted_conditions.add(condition_details["condition"]) # Add condition to set
+                    recommendations.add(condition_details["recommendation"]) # Add recommendation
+                    condition_severity = condition_details["severity"]
+                    severity_levels_order = {"Mild": 1, "Moderate": 2, "Severe": 3, "Unknown": 0}
+                    highest_severity_level = severity_levels_order.get(overall_severity, 1) # Default to 'Mild' if current severity is invalid
+                    if severity_levels_order[condition_severity] > highest_severity_level:
+                        overall_severity = condition_severity
 
-    #Assign recommendations
-    for condition in possible_conditions:
-        if condition in RECOMMENDATIONS:
-            recommendations.add(RECOMMENDATIONS[condition])
+
+    # 2. Then, check SYMPTOM-BASED conditions for any remaining symptoms (less specific conditions)
+    for symptom in symptoms:
+        symptom_lower = symptom.lower() # Case-insensitive matching for symptoms
+        if symptom_lower in data.SYMPTOM_CONDITION_MAPPING:
+            condition_data = data.SYMPTOM_CONDITION_MAPPING[symptom_lower]
+            predicted_conditions.add(condition_data["condition"]) # Add condition to set
+            recommendations.add(condition_data["recommendation"]) # Add recommendation
+            condition_severity = condition_data["severity"]
+            severity_levels_order = {"Mild": 1, "Moderate": 2, "Severe": 3, "Unknown": 0}
+            highest_severity_level = severity_levels_order.get(overall_severity, 1) # Default to 'Mild' if current severity is invalid
+            if severity_levels_order[condition_severity] > highest_severity_level:
+                overall_severity = condition_severity
+
+
+    # 3. Handle case where no conditions were found at all (set default condition only if no others found)
+    if not predicted_conditions: # Check if the set is empty
+        predicted_conditions = [data.DEFAULT_RESPONSE["condition"]] # Use default condition
+        recommendations = [data.DEFAULT_RESPONSE["recommendation"]] # Use default recommendation
+        overall_severity = data.DEFAULT_RESPONSE["severity"] # Use default severity
+
 
     return {
-        "conditions": list(possible_conditions) if possible_conditions else ["Unknown Condition"],
-        "recommendation": list(recommendations) if recommendations else ["Consult a doctor if symptoms persist."]
+        "conditions": list(predicted_conditions), # Convert set to list for JSON
+        "severity": overall_severity,
+        "recommendation": list(recommendations), # Convert set to list for JSON
     }
+
 
 def lambda_handler(event, context):
     try:
-        # parse the JSON body correctly
-        body = json.loads(event.get("body", "{}"))  
+        body = json.loads(event.get("body", "{}"))
         symptoms = body.get("symptoms", [])
         medical_history = body.get("medical_history", [])
 
@@ -66,8 +61,7 @@ def lambda_handler(event, context):
                 "statusCode": 400,
                 "body": json.dumps({"error": "No symptoms provided"})
             }
-        
-        # Perform analysis
+
         result = analyze_symptoms(symptoms, medical_history)
 
         return {

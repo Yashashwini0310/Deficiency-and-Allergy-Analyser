@@ -55,8 +55,15 @@ def invoke_lambda(symptoms, medical_history):
             Payload=json.dumps(payload)
         )
         response_payload = json.loads(response["Payload"].read().decode("utf-8"))
-        return json.loads(response_payload.get("body", "{}"))
-    
+        result = json.loads(response_payload.get("body", "{}"))
+
+        severity = result.get("severity", "Unknown")  # ✅ Correct extraction of severity
+        return {
+            "conditions": result.get("conditions", []),
+            "severity": severity,
+            "recommendation": result.get("recommendation", [])
+        }
+
     except Exception as e:
         logger.error(f"Lambda invocation error: {e}")
         return {"error": "Failed to process request"}
@@ -86,11 +93,14 @@ def dashboard(request):
     result = None
     high_severity = False
     recommendation = None
+    severity_level = None
+    symptoms_str = ""  # Initialize symptoms_str here
+    medical_history_str = "" # Initialize medical_history_str here as well, for good practice
 
     if request.method == "POST":
         symptoms_str = request.POST.get("symptoms", "").strip()
         medical_history_str = request.POST.get("medical_history", "").strip()
-        
+
         # Ensure valid inputs
         symptoms = [s.strip() for s in symptoms_str.split(",") if s.strip()]
         medical_history = [m.strip() for m in medical_history_str.split(",") if m.strip()]
@@ -98,17 +108,27 @@ def dashboard(request):
         logger.info(f"Received Symptoms: {symptoms}, Medical History: {medical_history}")
 
         if symptoms:
-            result = invoke_lambda(symptoms, medical_history)
-            high_severity = "Severe" in result.get("severity", "")
-            recommendation = result.get("recommendation")
+                        # **Update UserProfile with new symptoms and medical history**
+            user_profile = UserProfile.objects.get(user=request.user)
+            user_profile.symptoms = symptoms_str # Save raw string for display at the top
+            user_profile.medical_history = medical_history_str # Save raw string
+            user_profile.save()
 
-        logger.info(f"Lambda Result: {result}")
+            result = invoke_lambda(symptoms_str, medical_history_str)
+            logger.info(f"Raw Lambda Result: {result}")
+            conditions = result.get("conditions", [])
+            severity_level = result.get("severity")
+            recommendation = result.get("recommendation")
+            print(f"result: {result}; severity_level: {severity_level}; conditions: {conditions}; recommendations: {recommendation}") #debug
+            logger.info(f"Lambda Result: {result}")  # Corrected logging
 
     return render(request, "user_management/dashboard.html", {
+        "symptoms": symptoms_str,
         "result": result,
-        "high_severity": high_severity,
+        "severity_level": severity_level,
         "recommendation": recommendation,
-    })
+        "disclaimer": "This is just a predicted analysis. Kindly consult your doctor for more info. The results can be inaccurate.",
+})
 
 # ✅ API View for Symptom Submission (Calls Lambda)
 @method_decorator(csrf_exempt, name="dispatch")

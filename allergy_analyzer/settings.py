@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 import boto3
 from botocore.exceptions import NoCredentialsError
-import logging
+import logging, os
 import watchtower 
 from watchtower import CloudWatchLogHandler #this is for cloudwatch logs
 from pathlib import Path
@@ -20,10 +20,6 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 AWS_LAMBDA_FUNCTION_NAME = "SymptomAnalysisLambda" #AWS lambda functionname for symptom analysis
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-&&agd53()b1avuinha(52u7z%n$*g#x#jf&yku7p2en+3uwi69'
 
 # SECURITY WARNING: don't run with debug turned on in production!
@@ -192,3 +188,13 @@ try:
     logger.info("✅ CloudWatch logging configured successfully.")
 except Exception as e:
     logging.error(f"⚠️ Error configuring CloudWatch logging: {e}")
+    
+
+# AWS S3 Settings
+AWS_STORAGE_BUCKET_NAME = 'allergy-analyzer-reports'  # Replace with your bucket name
+ 
+#AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_REGION}.amazonaws.com' #used for static and media files 
+
+# Media settings
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')

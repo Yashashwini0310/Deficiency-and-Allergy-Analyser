@@ -6,7 +6,8 @@ class UserProfile(models.Model):
     symptoms = models.TextField(blank=True, null=True)  # Store symptoms
     severity_level = models.IntegerField(blank=True, null=True)  # Add this line  # Store severity
     medical_history = models.TextField(blank=True, null=True)  # Store medical history
-
+    report_url = models.CharField(max_length=255, blank=True, null=True) #for s3 url
+    
     def __str__(self):
         return self.user.username
 

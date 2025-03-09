@@ -175,38 +175,45 @@
         <!--{% endif %}-->
 
          <!--Logout Link -->
-        {% if result %}
-        <div class = "results">
+         {% if result %}
+    <div class="results">
         <h3>Predicted Conditions:</h3>
         <ul>
-        {% for condition in result.conditions %}  <!-- ✅ Corrected Loop -->
-            <li></Strong>Possible Conditions:</strong> {{ condition }}</li>
-        {% endfor %}
-        </ul>
-        
-        <p><strong>Your Symptoms:</strong> {{ symptoms }}</p>
-        <h4>Severity Level: {{ severity_level }}</h4>  <!-- ✅ Shows severity -->
-    
-        {% if recommendation %}
-        <h4>Recommendations:</h4>
-        <ul>
-            {% for item in recommendation %}
-                <li>{{ item }}</li>
+            {% for condition in result.conditions %}
+                <li><strong>Possible Condition:</strong> {{ condition }}</li>
             {% endfor %}
         </ul>
-        <p style="color: red; font-weight: bold;">
-        {{ disclaimer }}
-        </p>
+
+        <p><strong>Your Symptoms:</strong> {{ symptoms }}</p>
+        <h4>Severity Level: {{ severity_level }}</h4>
+
+        {% if recommendation %}
+            <h4>Recommendations:</h4>
+            <ul>
+                {% for item in recommendation %}
+                    <li>{{ item }}</li>
+                {% endfor %}
+            </ul>
         {% endif %}
-        {% else %}
-            <div class="results">
-                <p>No analysis performed yet. Please enter your symptoms and medical history.</p>
-            </div>
-           
-        <p style="color: red; font-weight: bold;">
-        {{ disclaimer }}
-        </p>  <!-- ✅ Shows disclaimer message -->
-            {% endif %}
+
+        <p style="color: red; font-weight: bold;">{{ disclaimer }}</p>
+
+        <!-- ✅ SQS Alerts Section with Styling -->
+        {% if messages %}
+            <h3 style="color: red;">🚨 Alerts:</h3>
+            <ul style="background-color: #ffebeb; padding: 10px; border-left: 5px solid red;">
+                {% for msg in messages %}
+                    <li>{{ msg }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+{% else %}
+    <div class="results">
+        <p>No analysis performed yet. Please enter your symptoms and medical history.</p>
+    </div>
+{% endif %}
+
 
         <a class="logout" href="{% url 'logout' %}">Logout</a>
     </div>

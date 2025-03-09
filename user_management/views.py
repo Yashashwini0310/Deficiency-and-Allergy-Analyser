@@ -16,21 +16,10 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from django.http import JsonResponse
 from rest_framework.authtoken.models import Token
-from django.contrib.auth import authenticate
-from django.contrib.auth.decorators import login_required
-from django.utils.decorators import method_decorator
-from django.views.decorators.csrf import csrf_exempt
-from django.http import JsonResponse
-from django.shortcuts import render
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.authentication import TokenAuthentication
-from rest_framework.permissions import IsAuthenticated
-import json
-import boto3
-import logging
+import json, boto3, logging
 from django.conf import settings
-
+from aws_services.sqs_handler import receive_sqs_messages, send_message_to_sqs
+from aws_services.sns_handler import send_sns_alert
 # AWS Configuration
 AWS_REGION = "us-east-1"
 AWS_LAMBDA_FUNCTION_NAME = "SymptomAnalysisLambda"
@@ -96,7 +85,9 @@ def dashboard(request):
     severity_level = None
     symptoms_str = ""  # Initialize symptoms_str here
     medical_history_str = "" # Initialize medical_history_str here as well, for good practice
-
+    messages = receive_sqs_messages() 
+    conditions = []
+    
     if request.method == "POST":
         symptoms_str = request.POST.get("symptoms", "").strip()
         medical_history_str = request.POST.get("medical_history", "").strip()
@@ -113,17 +104,35 @@ def dashboard(request):
             user_profile.symptoms = symptoms_str # Save raw string for display at the top
             user_profile.medical_history = medical_history_str # Save raw string
             user_profile.save()
+            
+            # **Send SNS Alert**
+            alert_message = f"User {request.user.username} reported symptoms: {symptoms}"
+            send_sns_alert(alert_message)
 
-            result = invoke_lambda(symptoms_str, medical_history_str)
+            
+             # **Invoke Lambda Function**
+            result = invoke_lambda(symptoms, medical_history)
             logger.info(f"Raw Lambda Result: {result}")
+            
+             # Extract details from Lambda response
             conditions = result.get("conditions", [])
             severity_level = result.get("severity")
             recommendation = result.get("recommendation")
             print(f"result: {result}; severity_level: {severity_level}; conditions: {conditions}; recommendations: {recommendation}") #debug
             logger.info(f"Lambda Result: {result}")  # Corrected logging
-
+            
+            # **Send Result to SQS**
+            sqs_message = {
+                "user": request.user.username,
+                "symptoms": symptoms,
+                "result": result
+            }
+            send_message_to_sqs(sqs_message)
+   
     return render(request, "user_management/dashboard.html", {
+        "messages": messages, #since I have commented this line because I want the sqs message in my dashboard for now. 
         "symptoms": symptoms_str,
+        "conditions":conditions,
         "result": result,
         "severity_level": severity_level,
         "recommendation": recommendation,
@@ -177,7 +186,7 @@ def user_login(request):
                 form.add_error(None, 'Invalid credentials')
     else:
         form = UserLoginForm()
-    return render(request, 'user_management/login.html', {'form': form})
+    return render(request, 'registration/login.html', {'form': form})
 
 # User Logout View
 @login_required

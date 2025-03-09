@@ -1,0 +1,36 @@
+{% extends "base.html" %} 
+
+{% block title %}Login{% endblock %}  {#  Optional: Set the title for the login page. If you have a {% block title %} in your base.html #}
+
+{% block content %}
+<div class="container mt-5">  {#  Example container for centering/styling the login form. You can adjust CSS classes #}
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h2>Login</h2>  {#  Login heading #}
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="mb-3">  {#  Example form group for styling and spacing #}
+                            <label for="{{ form.username.id_for_label }}" class="form-label">Username:</label>
+                            {{ form.username }}
+                        </div>
+                        <div class="mb-3">
+                            <label for="{{ form.password.id_for_label }}" class="form-label">Password:</label>
+                            {{ form.password }}
+                        </div>
+                        <button type="submit" class="btn btn-primary">Login</button>  {#  Example button with Bootstrap class (you can use your own) #}
+                    </form>
+                </div>
+                <div class="card-footer text-muted">
+                    <p class="mt-2">
+                        Don't have an account? <a href="{% url 'register' %}">Register here</a>  {#  Link to your registration URL (replace 'register' with your actual URL name) #}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

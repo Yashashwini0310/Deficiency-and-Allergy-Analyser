@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import path, include
 from .views import (
     user_register, user_login, user_logout, dashboard, 
     UserProfileAPIView, AllergyListAPIView, DeficiencyListAPIView, 
@@ -24,7 +24,7 @@ urlpatterns = [
     path('deficiencies/create/', views.deficiency_create, name='deficiency_create'),
     path('deficiencies/<int:pk>/update/', views.deficiency_update, name='deficiency_update'),
     path('deficiencies/<int:pk>/delete/', views.deficiency_delete, name='deficiency_delete'),
-    
+    path('accounts/', include('django.contrib.auth.urls')),
     #API URLs
     path('api/login/', api_user_login, name='api-login'),  # 🔹 Updated function name    path('user-profile/', UserProfileAPIView.as_view(), name='user-profile-api'),
     path('user-profile/', UserProfileAPIView.as_view(), name='user-profile-api'),

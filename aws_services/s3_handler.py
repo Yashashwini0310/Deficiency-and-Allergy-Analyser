@@ -14,7 +14,7 @@ def upload_to_s3(file_path, s3_filename):
     """Uploads a file to S3."""
     try:
         with open(file_path, 'rb') as data:
-            s3_client.upload_fileobj(data, BUCKET_NAME, s3_filename, ACL='authenticated-read')
+            s3_client.upload_fileobj(data, BUCKET_NAME, s3_filename)
         file_url = f"https://{BUCKET_NAME}.s3.{AWS_REGION}.amazonaws.com/{s3_filename}"
         logger.info(f"File uploaded to S3: {file_url}")
         return file_url

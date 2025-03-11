@@ -1,7 +1,7 @@
 import boto3
 from django.conf import settings
 import logging
-
+#this is to make sure that the authenticated user gets the report, due to less IAM credentials
 logger = logging.getLogger(__name__)
 
 def generate_presigned_url(bucket_name, object_name, expiration=3600):

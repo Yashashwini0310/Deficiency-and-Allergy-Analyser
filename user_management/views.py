@@ -22,6 +22,13 @@ from aws_services.sqs_handler import receive_sqs_messages, send_message_to_sqs
 from aws_services.sns_handler import send_sns_alert
 from aws_services.s3_handler import upload_to_s3
 from .utils import generate_presigned_url
+from aws_services.dynamodb_handler import store_analysis, retrieve_analysis_history
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import letter
+from reportlab.lib.units import inch
+
+
+
 # AWS Configuration
 AWS_REGION = "us-east-1"
 AWS_LAMBDA_FUNCTION_NAME = "SymptomAnalysisLambda"
@@ -89,6 +96,7 @@ def dashboard(request):
     medical_history_str = "" # Initializes medical_history_str here 
     messages = receive_sqs_messages() 
     conditions = []
+    analysis_history = []
     
     if request.method == "POST":
         symptoms_str = request.POST.get("symptoms", "").strip()
@@ -102,7 +110,7 @@ def dashboard(request):
 
         if symptoms:
             try: # **Update UserProfile with new symptoms and medical history**
-                user_profile = UserProfile.objects.get(user=request    .user)
+                user_profile = UserProfile.objects.get(user=request.user)
                 user_profile.symptoms = symptoms_str # Save raw     string for display at the top
                 user_profile.medical_history = medical_history_str     # Save raw string
                 user_profile.save()
@@ -134,28 +142,51 @@ def dashboard(request):
             send_message_to_sqs(sqs_message)
             
             # Save results to a JSON file
-            report_filename = f"{request.user.username}_report.json"
+            report_filename = f"{request.user.username}_report.pdf"
             report_path = os.path.join(settings.MEDIA_ROOT, report_filename)
             
-            with open(report_path, "w") as report_file:
-                logger.info("Attempting to write report file...")
-                json.dump(result, report_file) # writes the json file as a result
-                logger.info("Report file written successfully.")
-            logger.info(f"Report file written to: {report_path}")
+            # with open(report_path, "w") as report_file:
+            #     logger.info("Attempting to write report file...")
+            #     json.dump(result, report_file) # writes the json file as a result
+            #     logger.info("Report file written successfully.")
+            # logger.info(f"Report file written to: {report_path}")
+            
+            try:
+                c = canvas.Canvas(report_path, pagesize=letter)
+                c.drawString(1 * inch, 10 * inch, f"Report for {request.user.username}")
+
+                y = 9 * inch
+                for key, value in result.items():
+                    c.drawString(1 * inch, y, f"{key}: {value}")
+                    y -= 0.5 * inch
+
+                c.save()
+                logger.info(f"PDF report created: {report_path}")
+
+            except Exception as e:
+                logger.error(f"Error creating PDF report: {e}")
+                return render(request, "user_management/dashboard.html", {"error": "Error creating PDF report."})
+
             #uploads the file to s3
             upload_to_s3(report_path, report_filename)
             s3_url = generate_presigned_url(settings.AWS_STORAGE_BUCKET_NAME, report_filename)
-            logger.info(f"Pre-signed URL from generate_presigned_url: {s3_url}")
+            # logger.info(f"Pre-signed URL from generate_presigned_url: {s3_url}")
+            
+            # Store analysis in DynamoDB
+            store_analysis(request.user.username, symptoms_str, medical_history_str, result, report_filename)
+            
+            # Fetch previous analysis history
+            analysis_history = retrieve_analysis_history(request.user.username)
             
             #saves the s3 URL to the user profile
             if s3_url:
                 try:
                 
                     user_profile = UserProfile.objects.get(user=request.user)
-                    logger.info(f"Saving report URL to profile: {s3_url}") #debugging
+                    # logger.info(f"Saving report URL to profile: {s3_url}") #debugging
                     user_profile.report_url = s3_url
                     user_profile.save()
-                    logger.info(f"Report URL saved to profile.") #debugging to see if the file saved
+                    # logger.info(f"Report URL saved to profile.") #debugging to see if the file saved
                 except UserProfile.DoesNotExist:
                     logger.error(f"UserProfile does not exist for user: {request.user.username}")
     
@@ -169,6 +200,7 @@ def dashboard(request):
         "severity_level": severity_level,
         "recommendation": recommendation,
         "disclaimer": "This is just a predicted analysis. Kindly consult your doctor for more info. The results can be inaccurate.",
+        "analysis_history": analysis_history
 })
 
 # ✅ API View for Symptom Submission (Calls Lambda)

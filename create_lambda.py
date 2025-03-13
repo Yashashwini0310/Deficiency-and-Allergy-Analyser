@@ -2,7 +2,7 @@ import os
 import zipfile
 
 def create_lambda_package():
-    lambda_dir = "lambda_code"
+    lambda_dir = "lambda_package"
     zip_file = "lambda_function.zip"
 
     # Create ZIP file

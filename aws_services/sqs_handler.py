@@ -49,23 +49,27 @@ def receive_sqs_messages():
             WaitTimeSeconds=10
         )
 
-        messages_data = response.get("Messages", []) # Safe access in case 'Messages' key is missing
+        messages_data = response.get("Messages", []) # Safely accessess in case 'Messages' key was missing
 
         for msg_data in messages_data:
             try: # Inner try-except for processing each message to prevent one bad message from stopping all
                 message_body = msg_data['Body'] # Extract message body
-                messages_list.append(message_body) # Add to list
-                print(f"Received and Processed SQS Message: {message_body}") # Log processing
+                parsed_body = json.loads(message_body)  # Parsing JSON here
+                messages_list.append(parsed_body) # Addding to list
+                print(f"Received and Processed SQS Message: {parsed_body}") # Log processing
 
             # Delete the message after successful processing
                 sqs_client.delete_message(
                     QueueUrl=queue_url,
-                    ReceiptHandle=msg_data["ReceiptHandle"]
+                    ReceiptHandle=msg_data["ReceiptHandle"] 
                 )
                 print(f"Deleted SQS Message with ReceiptHandle: {msg_data['ReceiptHandle']}") # Log deletion
+            except json.JSONDecodeError:
+                logger.error(f"Error decoding JSON in SQS message, ReceiptHandle: {msg_data.get('ReceiptHandle', 'N/A')}", exc_info=True)
+                messages_list.append({"error": "Invalid JSON message received."})
             except Exception as processing_error:
                 logger.error(f"Error processing SQS message: {processing_error}, ReceiptHandle: {msg_data.get('ReceiptHandle', 'N/A')}", exc_info=True) # Log error for individual message processing
-
+                messages_list.append({"error": "Error processing message."})
     except Exception as e:
         logger.error(f"Error retrieving or processing SQS messages: {e}") # Log detailed error
         messages_list = ["Error retrieving system messages. Please check logs."] # User-friendly error message to display on dashboard

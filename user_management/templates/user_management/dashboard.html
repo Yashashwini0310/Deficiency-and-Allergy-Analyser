@@ -154,27 +154,6 @@
             <button type="submit">Analyze</button>
         </form>
         
-         <!--Display Analysis Results -->
-        <!--{% if result %}-->
-        <!--<div class="results">-->
-        <!--    <h3>Possible Conditions:</h3>-->
-        <!--    <ul>-->
-        <!--        {% for item in result.conditions %}-->
-        <!--            <li>{{ item.condition }} - Severity: <strong>{{ item.severity_level }}</strong></li>-->
-        <!--        {% empty %}-->
-        <!--            <li>No matching conditions found.</li>-->
-        <!--        {% endfor %}-->
-        <!--    </ul>-->
-
-             <!--Display Recommendation -->
-        <!--    <p><strong>Recommendation:</strong> {{ recommendation }}</p>-->
-        <!--    <p style="color: red; font-weight: bold;">-->
-        <!--{{ disclaimer }}-->
-        <!--</p>  <!-- ✅ Shows disclaimer message -->
-        <!--</div>-->
-        <!--{% endif %}-->
-
-         <!--Logout Link -->
          {% if result %}
     <div class="results">
         <h3>Predicted Conditions:</h3>
@@ -227,15 +206,26 @@
         
         <!-- ✅ SQS Alerts Section with Styling -->
         {% if messages %}
-            <h3 style="color: red;">🚨 Alerts:</h3>
+        <h3 style="color: red;">🚨 Alerts:</h3>
             <ul style="background-color: #ffebeb; padding: 10px; border-left: 5px solid red;">
-                {% for msg in messages %}
-                    <li>{{ msg }}</li>
-                {% endfor %}
-            </ul>
-        {% endif %}
+    <ul>
+        {% for message in messages %}
+            <li>
+                {% if message.error %}
+                    Error: {{ message.error }}
+                {% else %}
+                    User: {{ message.user }}<br>
+                    Symptoms: {{ message.symptoms }}<br>
+                    Result: {{ message.result }}<br>
+                {% endif %}
+            </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p>No messages in the SQS queue.</p>
+    {% endif %}
     </div>
-{% else %}
+    {% else %}
     <div class="results">
         <p>No analysis performed yet. Please enter your symptoms and medical history.</p>
     </div>

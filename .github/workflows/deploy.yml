@@ -1,0 +1,46 @@
+name: Deploy Allergy Analyzer
+
+on:
+  push:
+    branches:
+      - main  # Runs CI/CD on every push to main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    permissions:
+      id-token: write  # Required for OIDC-based authentication, helps in securing the AWS secret keys
+      contents: read
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Install Python Dependencies
+        run: |
+          pip install pylint
+          pip install -r requirements.txt  # Ensure all dependencies are installed
+
+      - name: Run Pylint Tests (Exclude CloudWatch)
+        run: |
+          pylint aws_services/ lambda_code/ user_management/ --ignore=aws_services/cloudwatch_setup.py
+
+      - name: Deploy AWS Lambda
+        run: |
+          cd lambda_code
+          zip -r lambda_function.zip lambda_function.py
+          aws lambda update-function-code --function-name AllergyAnalyzerLambda --zip-file fileb://lambda_function.zip
+
+      - name: Deploy Other AWS Services (S3, SQS, SNS, DynamoDB)
+        run: |
+          cd aws_services
+          python s3_setup.py
+          python sqs_sns_setup.py
+          python dynamodb_setup.py

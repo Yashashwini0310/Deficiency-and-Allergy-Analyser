@@ -87,9 +87,11 @@ def api_user_login(request):
 # ✅ Dashboard View (Calls Lambda)
 @login_required
 def dashboard(request):
+
+    #Handles the user dashboard, including symptom analysis and report generation.
+
     logger.info(f"Dashboard accessed by user: {request.user}")
     result = None
-    high_severity = False
     recommendation = None
     severity_level = None
     symptoms_str = ""  # Initializes symptoms_str here
@@ -99,17 +101,18 @@ def dashboard(request):
     analysis_history = []
     
     if request.method == "POST":
+        # Retrieve user input from the form
         symptoms_str = request.POST.get("symptoms", "").strip()
         medical_history_str = request.POST.get("medical_history", "").strip()
 
-        # Ensure valid inputs
+        # Ensure valid inputs to process into lists
         symptoms = [s.strip() for s in symptoms_str.split(",") if s.strip()]
         medical_history = [m.strip() for m in medical_history_str.split(",") if m.strip()]
 
         logger.info(f"Received Symptoms: {symptoms}, Medical History: {medical_history}")
 
         if symptoms:
-            try: # **Update UserProfile with new symptoms and medical history**
+            try: # **Update UserProfile with raw input
                 user_profile = UserProfile.objects.get(user=request.user)
                 user_profile.symptoms = symptoms_str # Save raw     string for display at the top
                 user_profile.medical_history = medical_history_str     # Save raw string
@@ -117,39 +120,35 @@ def dashboard(request):
             except UserProfile.DoesNotExist:
                 logger.error(f"UserProfile does not exist for user: {request.user.username}")
             
-            # **Send SNS Alert**
+            # Send SNS Alert to notify about symptom report
             alert_message = f"User {request.user.username} reported symptoms: {symptoms}"
             send_sns_alert(alert_message)
 
             
-             # **Invoke Lambda Function**
+             # Invoke AWS Lambda Function for symptom analysis
             result = invoke_lambda(symptoms, medical_history)
             logger.info(f"Raw Lambda Result: {result}")
             
-             # Extract details from Lambda response
+             # Extract analysis results from Lambda response
             conditions = result.get("conditions", [])
             severity_level = result.get("severity")
             recommendation = result.get("recommendation")
+            
             print(f"result: {result}; severity_level: {severity_level}; conditions: {conditions}; recommendations: {recommendation}") #debug
             logger.info(f"Lambda Result: {result}")  # Corrected logging
             
-            # **Send Result to SQS**
+            # Send Analysis Result to SQS for further processing
             sqs_message = {
                 "user": request.user.username,
                 "symptoms": symptoms,
                 "result": result
             }
             send_message_to_sqs(sqs_message)
-            
+            print(messages)
             # Save results to a JSON file
             report_filename = f"{request.user.username}_report.pdf"
             report_path = os.path.join(settings.MEDIA_ROOT, report_filename)
             
-            # with open(report_path, "w") as report_file:
-            #     logger.info("Attempting to write report file...")
-            #     json.dump(result, report_file) # writes the json file as a result
-            #     logger.info("Report file written successfully.")
-            # logger.info(f"Report file written to: {report_path}")
             
             try:
                 c = canvas.Canvas(report_path, pagesize=letter)
@@ -167,7 +166,7 @@ def dashboard(request):
                 logger.error(f"Error creating PDF report: {e}")
                 return render(request, "user_management/dashboard.html", {"error": "Error creating PDF report."})
 
-            #uploads the file to s3
+            #uploads the report file to s3 and generate preseigned URL
             upload_to_s3(report_path, report_filename)
             s3_url = generate_presigned_url(settings.AWS_STORAGE_BUCKET_NAME, report_filename)
             # logger.info(f"Pre-signed URL from generate_presigned_url: {s3_url}")
@@ -181,7 +180,6 @@ def dashboard(request):
             #saves the s3 URL to the user profile
             if s3_url:
                 try:
-                
                     user_profile = UserProfile.objects.get(user=request.user)
                     # logger.info(f"Saving report URL to profile: {s3_url}") #debugging
                     user_profile.report_url = s3_url
@@ -189,9 +187,11 @@ def dashboard(request):
                     # logger.info(f"Report URL saved to profile.") #debugging to see if the file saved
                 except UserProfile.DoesNotExist:
                     logger.error(f"UserProfile does not exist for user: {request.user.username}")
-    
+    # Log the report URL for debugging
+    report_url_log = request.user.userprofile.report_url if hasattr(request.user, 'userprofile') and hasattr(request.user.userprofile, 'report_url') else 'UserProfile or report_url missing'
     logger.debug(f"Rendering dashboard with report_url: {request.user.userprofile.report_url if hasattr(request.user, 'userprofile') else 'No UserProfile'}")
-   
+
+# Render the dashboard template   
     return render(request, "user_management/dashboard.html", {
         "messages": messages, #since I have commented this line because I want the sqs message in my dashboard for now. 
         "symptoms": symptoms_str,

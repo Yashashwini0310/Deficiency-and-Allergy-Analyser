@@ -5,7 +5,7 @@ from .models import UserProfile, Allergy, Deficiency
 class UserRegistrationForm(forms.ModelForm):
     password = forms.CharField(widget=forms.PasswordInput())
     symptoms = forms.CharField(widget=forms.Textarea(), required=False)
-    medical_history = forms.CharField(widget=forms.Textarea(), required=False)  # New field
+    medical_history = forms.CharField(widget=forms.Textarea(), required=False)  
 
     class Meta:
         model = User
@@ -20,7 +20,7 @@ class UserRegistrationForm(forms.ModelForm):
             UserProfile.objects.create(
                 user=user,
                 symptoms=self.cleaned_data['symptoms'],
-                medical_history=self.cleaned_data['medical_history']  # Save medical history
+                medical_history=self.cleaned_data['medical_history']  # Saves medical history
             )
         return user
 

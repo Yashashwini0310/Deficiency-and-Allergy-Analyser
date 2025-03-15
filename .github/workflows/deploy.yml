@@ -19,7 +19,10 @@ jobs:
           role-to-assume: ${{ secrets.ROLE_ARN }}
           aws-region: ${{ secrets.AWS_REGION }}
           role-session-name: GitHubActionsSession
-
+      - name: test aws connection
+        run: |
+          aws sts get-caller-identity
+          
       - name: Install Python Dependencies
         run: |
           pip install pylint

@@ -1,5 +1,5 @@
 import boto3
-
+""" SNS handler to get and send messages to alert the user """
 AWS_REGION = "us-east-1"
 SNS_TOPIC_NAME = "SymptomAlertsTopic"
 

@@ -1,12 +1,12 @@
-import boto3
 import logging
-
+import boto3
+"""s3_setup file is to create an s3 bucket in AWS programatically """
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)  # Set logging level
 
 # AWS Configuration
 AWS_REGION = "us-east-1"
-BUCKET_NAME = "allergy-analyzer-reports"  
+BUCKET_NAME = "allergy-analyzer-reports"
 
 def create_s3_bucket():
     """Create an S3 bucket if it doesn't exist."""

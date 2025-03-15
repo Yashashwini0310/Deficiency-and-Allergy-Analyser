@@ -1,10 +1,13 @@
+from django.http import HttpResponse
+import json
+import logging
+import os
+import boto3
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-from .forms import UserRegistrationForm, UserLoginForm, AllergyForm, DeficiencyForm
 from .symptom_analysis.analyzer import analyze_symptoms
 from .models import UserProfile, Allergy, Deficiency
-from django.http import HttpResponse
 from rest_framework import generics, viewsets, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -15,17 +18,17 @@ from .serializers import UserProfileSerializer, AllergySerializer, DeficiencySer
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from django.http import JsonResponse
-from rest_framework.authtoken.models import Token
-import json, boto3, logging, os
+from rest_framework.authtoken.models import Token 
 from django.conf import settings
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import letter
+from reportlab.lib.units import inch
 from aws_services.sqs_handler import receive_sqs_messages, send_message_to_sqs
 from aws_services.sns_handler import send_sns_alert
 from aws_services.s3_handler import upload_to_s3
 from .utils import generate_presigned_url
 from aws_services.dynamodb_handler import store_analysis, retrieve_analysis_history
-from reportlab.pdfgen import canvas
-from reportlab.lib.pagesizes import letter
-from reportlab.lib.units import inch
+from .forms import UserRegistrationForm, UserLoginForm, AllergyForm, DeficiencyForm
 
 
 
@@ -95,11 +98,10 @@ def dashboard(request):
     recommendation = None
     severity_level = None
     symptoms_str = ""  # Initializes symptoms_str here
-    medical_history_str = "" # Initializes medical_history_str here 
-    messages = receive_sqs_messages() 
+    medical_history_str = "" # Initializes medical_history_str here
+    messages = receive_sqs_messages()
     conditions = []
     analysis_history = []
-    
     if request.method == "POST":
         # Retrieve user input from the form
         symptoms_str = request.POST.get("symptoms", "").strip()
@@ -123,7 +125,6 @@ def dashboard(request):
             # Send SNS Alert to notify about symptom report
             alert_message = f"User {request.user.username} reported symptoms: {symptoms}"
             send_sns_alert(alert_message)
-
             
              # Invoke AWS Lambda Function for symptom analysis
             result = invoke_lambda(symptoms, medical_history)
@@ -133,8 +134,8 @@ def dashboard(request):
             conditions = result.get("conditions", [])
             severity_level = result.get("severity")
             recommendation = result.get("recommendation")
-            
-            print(f"result: {result}; severity_level: {severity_level}; conditions: {conditions}; recommendations: {recommendation}") #debug
+            #debug
+            print(f"result: {result}; severity_level: {severity_level}; conditions: {conditions}; recommendations: {recommendation}")
             logger.info(f"Lambda Result: {result}")  # Corrected logging
             
             # Send Analysis Result to SQS for further processing
@@ -149,16 +150,13 @@ def dashboard(request):
             report_filename = f"{request.user.username}_report.pdf"
             report_path = os.path.join(settings.MEDIA_ROOT, report_filename)
             
-            
             try:
                 c = canvas.Canvas(report_path, pagesize=letter)
                 c.drawString(1 * inch, 10 * inch, f"Report for {request.user.username}")
-
                 y = 9 * inch
                 for key, value in result.items():
                     c.drawString(1 * inch, y, f"{key}: {value}")
                     y -= 0.5 * inch
-
                 c.save()
                 logger.info(f"PDF report created: {report_path}")
 
@@ -172,7 +170,8 @@ def dashboard(request):
             # logger.info(f"Pre-signed URL from generate_presigned_url: {s3_url}")
             
             # Store analysis in DynamoDB
-            store_analysis(request.user.username, symptoms_str, medical_history_str, result, report_filename)
+            store_analysis(request.user.username, symptoms_str, 
+            medical_history_str, result, report_filename)
             
             # Fetch previous analysis history
             analysis_history = retrieve_analysis_history(request.user.username)
@@ -188,12 +187,14 @@ def dashboard(request):
                 except UserProfile.DoesNotExist:
                     logger.error(f"UserProfile does not exist for user: {request.user.username}")
     # Log the report URL for debugging
-    report_url_log = request.user.userprofile.report_url if hasattr(request.user, 'userprofile') and hasattr(request.user.userprofile, 'report_url') else 'UserProfile or report_url missing'
+    report_url_log = request.user.userprofile.report_url 
+    if hasattr(request.user, 'userprofile') and hasattr(request.user.userprofile, 'report_url') 
+    else 'UserProfile or report_url missing'
     logger.debug(f"Rendering dashboard with report_url: {request.user.userprofile.report_url if hasattr(request.user, 'userprofile') else 'No UserProfile'}")
 
 # Render the dashboard template   
     return render(request, "user_management/dashboard.html", {
-        "messages": messages, #since I have commented this line because I want the sqs message in my dashboard for now. 
+        "messages": messages, #I want the sqs message in my dashboard. 
         "symptoms": symptoms_str,
         "conditions":conditions,
         "result": result,
@@ -203,7 +204,7 @@ def dashboard(request):
         "analysis_history": analysis_history
 })
 
-# ✅ API View for Symptom Submission (Calls Lambda)
+# API View for Symptom Submission (Calls Lambda)
 @method_decorator(csrf_exempt, name="dispatch")
 class SymptomSubmissionAPIView(APIView):
     authentication_classes = [TokenAuthentication] 
@@ -217,7 +218,7 @@ class SymptomSubmissionAPIView(APIView):
             logger.warning("API Request Missing Symptoms")
             return Response({"error": "Symptoms are required"}, status=400)
 
-        # ✅ Invoke Lambda
+        # Invoke Lambda
         result = invoke_lambda(symptoms, medical_history)
         logger.info(f"User: {request.user.username} | Symptoms: {symptoms} | Medical History: {medical_history} | Lambda Result: {result}")
 

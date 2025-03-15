@@ -1,0 +1,10 @@
+[MASTER]
+ignore-patterns=
+    user_management/symptom_analysis/
+    user_management/migrations/
+    env/
+load-plugins=
+    pylint_django
+
+[DJANGO]
+django-settings-module=allergy_analyzer.settings

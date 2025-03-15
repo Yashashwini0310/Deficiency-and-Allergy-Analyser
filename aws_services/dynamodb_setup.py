@@ -1,6 +1,7 @@
-import boto3
 import logging
-
+import boto3
+"""dynamodb_setup file code below created dynamodb table programatically
+helps in storing report files from the user dashboard"""
 logger = logging.getLogger(__name__)
 
 AWS_REGION = "us-east-1"
@@ -15,7 +16,6 @@ def create_dynamodb_table():
         if TABLE_NAME in existing_tables:
             logger.info(f"Table '{TABLE_NAME}' already exists.")
             return
-        
         response = dynamodb.create_table(
             TableName=TABLE_NAME,
             KeySchema=[{"AttributeName": "username", "KeyType": "HASH"},

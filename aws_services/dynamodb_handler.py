@@ -1,8 +1,9 @@
-import boto3
-import datetime
+"""dynamodb handler file is created to store the users input in a form of table """
 import logging
-from user_management.utils import generate_presigned_url #import the generate_presigned_url function.
+import datetime
+import boto3
 from django.conf import settings
+from user_management.utils import generate_presigned_url #import the generate_presigned_url func
 
 logger = logging.getLogger(__name__)
 
@@ -15,7 +16,6 @@ table = dynamodb.Table(TABLE_NAME)
 def store_analysis(username, symptoms, medical_history, result, s3_filename):
     """Store analysis data in DynamoDB."""
     timestamp = datetime.datetime.utcnow().isoformat()
-    
     try:
         response = table.put_item(
             Item={

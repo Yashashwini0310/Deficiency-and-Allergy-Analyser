@@ -1,5 +1,5 @@
 import boto3
-import json
+# import json --unused json as per pylint
 
 # AWS Configuration
 AWS_REGION = "us-east-1"  

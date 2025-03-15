@@ -1,7 +1,8 @@
-import boto3
 import json
 import logging
+import boto3
 
+"""SQS handler file to log errors and send the messages to the user"""
 logger = logging.getLogger(__name__)
 AWS_REGION = "us-east-1"
 SQS_QUEUE_NAME = "SymptomAlertsQueue"
@@ -15,7 +16,7 @@ def get_sqs_queue_url():
         return response["QueueUrl"]
     except Exception as e:
         logger.error(f"Error fetching SQS queue URL: {e}") # Log the error
-        return None # Or raise an exception again, or return a default URL if appropriate for your case. Returning None is often a good choice.
+        return None
 
 def send_message_to_sqs(message_body):
     """Sends a message to the SQS queue, handling queue URL errors."""
@@ -38,21 +39,24 @@ def receive_sqs_messages():
     """Retrieve messages from SQS with error handling."""
     messages_list = [] # Initialize list to return even if errors occur
     try:
-        queue_url = get_sqs_queue_url() # Get queue URL - Ensure this function handles errors as well
-        if not queue_url: # Check if get_sqs_queue_url returned None (error)
+        queue_url = get_sqs_queue_url() # Get queue URL
+        if not queue_url: # Checks if get_sqs_queue_url returned None (error)
             logger.error("SQS queue URL is None, cannot proceed to receive messages.")
-            return ["Error: Could not retrieve system messages. Queue URL not found."] # Return user-friendly error
+            # Returns user-friendly error
+            return ["Error: Could not retrieve system messages. Queue URL not found."] 
 
-        response = sqs_client.receive_message( # Try to receive messages
+        response = sqs_client.receive_message(
             QueueUrl=queue_url,
             MaxNumberOfMessages=5,
             WaitTimeSeconds=10
         )
-
-        messages_data = response.get("Messages", []) # Safely accessess in case 'Messages' key was missing
+        # Safely accessess in case 'Messages' key was missing
+        messages_data = response.get("Messages", []) 
 
         for msg_data in messages_data:
-            try: # Inner try-except for processing each message to prevent one bad message from stopping all
+            #Inner try-except for processing each message 
+            #to prevent one bad message from stopping all
+            try: 
                 message_body = msg_data['Body'] # Extract message body
                 parsed_body = json.loads(message_body)  # Parsing JSON here
                 messages_list.append(parsed_body) # Addding to list
@@ -61,21 +65,26 @@ def receive_sqs_messages():
             # Delete the message after successful processing
                 sqs_client.delete_message(
                     QueueUrl=queue_url,
-                    ReceiptHandle=msg_data["ReceiptHandle"] 
+                    ReceiptHandle=msg_data["ReceiptHandle"]
                 )
-                print(f"Deleted SQS Message with ReceiptHandle: {msg_data['ReceiptHandle']}") # Log deletion
+                # Log deletion
+                print(f"Deleted SQS Message with ReceiptHandle: {msg_data['ReceiptHandle']}")
             except json.JSONDecodeError:
                 logger.error(f"Error decoding JSON in SQS message, ReceiptHandle: {msg_data.get('ReceiptHandle', 'N/A')}", exc_info=True)
                 messages_list.append({"error": "Invalid JSON message received."})
+            
             except Exception as processing_error:
-                logger.error(f"Error processing SQS message: {processing_error}, ReceiptHandle: {msg_data.get('ReceiptHandle', 'N/A')}", exc_info=True) # Log error for individual message processing
+                # Log error for individual message processing
+                logger.error(f"Error processing SQS message: {processing_error}, ReceiptHandle: {msg_data.get('ReceiptHandle', 'N/A')}", exc_info=True)
                 messages_list.append({"error": "Error processing message."})
+   
     except Exception as e:
         logger.error(f"Error retrieving or processing SQS messages: {e}") # Log detailed error
-        messages_list = ["Error retrieving system messages. Please check logs."] # User-friendly error message to display on dashboard
-        # Or you could return an empty list `return []` if you don't want to display an error message on dashboard, but just want to handle error silently.
+        # User-friendly error message to display on dashboard
+        messages_list = ["Error retrieving system messages. Please check logs."]
 
-    return messages_list # Return the list of messages (could be empty or contain error message in case of failure)
+# Return the list of messages (could be empty or contain error message in case of failure)
+    return messages_list 
     
 if __name__ == "__main__":
     receive_sqs_messages()

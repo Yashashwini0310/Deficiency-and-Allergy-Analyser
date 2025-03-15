@@ -36,6 +36,7 @@ jobs:
       - name: Install Dependencies
         run: |
           source env/bin/activate
+          pip install --upgrade watchtower
           pip install -r requirements.txt
           pip install watchtower
           pip install pylint

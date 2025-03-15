@@ -1,14 +1,13 @@
+"""SQS handler file to log errors and send the messages to the user"""
 import json
 import logging
 import boto3
-
-"""SQS handler file to log errors and send the messages to the user"""
 logger = logging.getLogger(__name__)
 AWS_REGION = "us-east-1"
 SQS_QUEUE_NAME = "SymptomAlertsQueue"
-
+#
 sqs_client = boto3.client("sqs", region_name=AWS_REGION)
-
+#
 def get_sqs_queue_url():
     """Fetch the SQS queue URL with error handling."""
     try:
@@ -17,7 +16,7 @@ def get_sqs_queue_url():
     except Exception as e:
         logger.error(f"Error fetching SQS queue URL: {e}") # Log the error
         return None
-
+#
 def send_message_to_sqs(message_body):
     """Sends a message to the SQS queue, handling queue URL errors."""
     queue_url = get_sqs_queue_url()
@@ -34,7 +33,7 @@ def send_message_to_sqs(message_body):
     except Exception as e:
         logger.error(f"Error sending message to SQS: {e}")
         return False # Indicate failure to send message
-
+#
 def receive_sqs_messages():
     """Retrieve messages from SQS with error handling."""
     messages_list = [] # Initialize list to return even if errors occur
@@ -43,8 +42,7 @@ def receive_sqs_messages():
         if not queue_url: # Checks if get_sqs_queue_url returned None (error)
             logger.error("SQS queue URL is None, cannot proceed to receive messages.")
             # Returns user-friendly error
-            return ["Error: Could not retrieve system messages. Queue URL not found."] 
-
+            return ["Error: Could not retrieve system messages. Queue URL not found."]
         response = sqs_client.receive_message(
             QueueUrl=queue_url,
             MaxNumberOfMessages=5,
@@ -52,7 +50,6 @@ def receive_sqs_messages():
         )
         # Safely accessess in case 'Messages' key was missing
         messages_data = response.get("Messages", []) 
-
         for msg_data in messages_data:
             #Inner try-except for processing each message 
             #to prevent one bad message from stopping all
@@ -61,7 +58,6 @@ def receive_sqs_messages():
                 parsed_body = json.loads(message_body)  # Parsing JSON here
                 messages_list.append(parsed_body) # Addding to list
                 print(f"Received and Processed SQS Message: {parsed_body}") # Log processing
-
             # Delete the message after successful processing
                 sqs_client.delete_message(
                     QueueUrl=queue_url,
@@ -72,19 +68,15 @@ def receive_sqs_messages():
             except json.JSONDecodeError:
                 logger.error(f"Error decoding JSON in SQS message, ReceiptHandle: {msg_data.get('ReceiptHandle', 'N/A')}", exc_info=True)
                 messages_list.append({"error": "Invalid JSON message received."})
-            
             except Exception as processing_error:
                 # Log error for individual message processing
                 logger.error(f"Error processing SQS message: {processing_error}, ReceiptHandle: {msg_data.get('ReceiptHandle', 'N/A')}", exc_info=True)
                 messages_list.append({"error": "Error processing message."})
-   
     except Exception as e:
         logger.error(f"Error retrieving or processing SQS messages: {e}") # Log detailed error
         # User-friendly error message to display on dashboard
         messages_list = ["Error retrieving system messages. Please check logs."]
-
 # Return the list of messages (could be empty or contain error message in case of failure)
     return messages_list 
-    
 if __name__ == "__main__":
     receive_sqs_messages()

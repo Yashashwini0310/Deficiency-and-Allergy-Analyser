@@ -3,6 +3,7 @@ ignore-patterns=
     user_management/symptom_analysis/
     user_management/migrations/
     env/
+    manage.py/
 load-plugins=
     pylint_django
 

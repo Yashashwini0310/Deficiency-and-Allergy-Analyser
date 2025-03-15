@@ -1,48 +1,64 @@
-name: Deploy Allergy Analyzer
+name: Django CI/CD Pipeline
 
 on:
   push:
     branches:
-      - main  # Runs CI/CD on every push to main
+      - main  # Trigger pushes to the main branch
 
 jobs:
-  build-and-deploy:
+  source:
+    name: Source Stage
     runs-on: ubuntu-latest
-    permissions:
-      id-token: write
-      contents: read
-      
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Configure AWS Assume Role Credentials
-        uses: aws-actions/configure-aws-credentials@v3
+  build:
+    name: Build Stage
+    runs-on: ubuntu-latest
+    needs: source  #runs only after source is completed
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
         with:
-          role-to-assume: ${{ secrets.ROLE_ARN }}
-          aws-region: ${{ secrets.AWS_REGION }}
-          role-session-name: GitHubActionsSession
-      - name: test aws connection
+          python-version: "3.9"
+      
+      - name: Create and Activate Virtual Environment
         run: |
-          aws sts get-caller-identity
-          
-      - name: Install Python Dependencies
+          python -m venv env
+          source env/bin/activate
+
+      - name: Install Dependencies
         run: |
+          source env/bin/activate
+          pip install -r requirements.txt
           pip install pylint
-          pip install -r requirements.txt 
+        
+      - name: Run Pylint
+        run: |
+          source env/bin/activate
+          pylint aws_services/ lambda_package/ user_management/
 
-      - name: Run Pylint Tests
+      - name: Run Django Migrations
         run: |
-          pylint aws_services/ lambda_package/ user_management/ 
+          source env/bin/activate
+          python manage.py makemigrations
+          python manage.py migrate
 
-      - name: Deploy AWS Lambda
+      - name: Run Tests
         run: |
-          python create_lambda.py
-          python deploy_lambda.py
-          
-      - name: Deploy Other AWS Services (S3, SQS, SNS, DynamoDB)
+          source env/bin/activate
+          python manage.py test
+
+      - name: Package Django App
         run: |
-          cd aws_services
-          python s3_setup.py
-          python sqs_sns_setup.py
-          python dynamodb_setup.py
+          source env/bin/activate
+          mkdir packaged_app
+          cp -r allergy_analyzer/ packaged_app/
+          cp manage.py packaged_app/
+          zip -r packaged_app.zip packaged_app

@@ -15,6 +15,7 @@ import logging, os
 import watchtower 
 from watchtower import CloudWatchLogHandler #this is for cloudwatch logs
 from pathlib import Path
+from django.core.exceptions import ImproperlyConfigured
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -30,7 +31,6 @@ ALLOWED_HOSTS = [
     '127.0.0.1',
     'localhost',
     '0.0.0.0']
-
 
 # Application definition
 
@@ -183,11 +183,10 @@ LOGGING = {
 try:
     logging.basicConfig(level=logging.INFO)
     logger = logging.getLogger("django")
-    logger.addHandler(watchtower.CloudWatchLogHandler(log_group=AWS_CLOUDWATCH_GROUP))
-
-    logger.info("✅ CloudWatch logging configured successfully.")
+    logger.addHandler(watchtower.CloudWatchLogHandler(log_group=AWS_CLOUDWATCH_GROUP,stream_name=AWS_CLOUDWATCH_STREAM))
+    logger.info("CloudWatch logging configured successfully.")
 except Exception as e:
-    logging.error(f"⚠️ Error configuring CloudWatch logging: {e}")
+    logging.error(f"Error configuring CloudWatch logging: {e}")
     
 
 # AWS S3 Settings

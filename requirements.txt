@@ -41,8 +41,8 @@ psycopg2-binary==2.9.10
 pycparser==2.22
 Pygments==2.19.1
 PyJWT==2.9.0
-pylint==3.3.5
-pylint-django==2.6.1
+pylint
+pylint-django
 pylint-plugin-utils==0.8.2
 python-dateutil==2.9.0.post0
 pytz==2025.1

@@ -42,7 +42,7 @@ jobs:
       
       - name: Set Environment Variables
         run: |
-          echo "DJANGO_SETTINGS_MODULE=cpp_project.allergy_analyzer.settings" >> $GITHUB_ENV
+          echo "DJANGO_SETTINGS_MODULE=allergy_analyzer.settings" >> $GITHUB_ENV
           echo "AWS_DEFAULT_REGION=us-east-1" >> $GITHUB_ENV
         
       - name: Run Pylint

@@ -154,26 +154,26 @@ AWS_REGION = "us-east-1"
 # Initialize Boto3 CloudWatch Logs Client
 # boto3_client = boto3.client("logs", region_name=AWS_REGION)
 #configuring logging below
-LOGGING = {
-    "version": 1,
-    "disable_existing_loggers": False,
-    "handlers": {
-        "watchtower": {
-            "level": "INFO",
-            "class": "watchtower.CloudWatchLogHandler",
-            "log_group_name": AWS_CLOUDWATCH_GROUP,
-            "stream_name": AWS_CLOUDWATCH_STREAM,
-            "region_name": AWS_REGION,
-        },
-    },
-    "loggers": {
-        "django": {
-            "handlers": ["watchtower"],
-            "level": "INFO",
-            "propagate": True,
-        },
-    },
-}
+# LOGGING = {
+#     "version": 1,
+#     "disable_existing_loggers": False,
+#     "handlers": {
+#         "watchtower": {
+#             "level": "INFO",
+#             "class": "watchtower.CloudWatchLogHandler",
+#             "log_group_name": AWS_CLOUDWATCH_GROUP,
+#             "stream_name": AWS_CLOUDWATCH_STREAM,
+#             "region_name": AWS_REGION,
+#         },
+#     },
+#     "loggers": {
+#         "django": {
+#             "handlers": ["watchtower"],
+#             "level": "INFO",
+#             "propagate": True,
+#         },
+#     },
+# }
  # Setup Logging
 # try:
 #     logging.basicConfig(level=logging.INFO)

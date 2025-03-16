@@ -51,7 +51,7 @@ jobs:
       - name: Run Pylint
         run: |
           source env/bin/activate
-          pylint --exclude=user_management/migrations.py, user_management/symptom_analysis/ aws_services/ lambda_package/ user_management/
+          pylint --exclude=user_management/migrations, user_management/symptom_analysis/ aws_services/ lambda_package/ user_management/
 
       - name: Run Django Migrations
         run: |

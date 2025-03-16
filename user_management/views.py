@@ -193,8 +193,7 @@ class SymptomSubmissionAPIView(APIView):
             return Response({"error": "Symptoms are required"}, status=400)
         # Invoke Lambda
         result = invoke_lambda(symptoms, medical_history)
-        logger.info(f"User: {request.user.username} |
-        Symptoms: {symptoms} | Medical History: {medical_history} | Lambda Result: {result}")
+        logger.info(f"User: {request.user.username} | Symptoms: {symptoms} | Medical History: {medical_history} | Lambda Result: {result}")
         return Response(result, status=200)
 # User Registration View
 def user_register(request):

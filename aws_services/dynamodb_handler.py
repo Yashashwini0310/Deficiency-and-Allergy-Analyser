@@ -26,7 +26,7 @@ def store_analysis(username, symptoms, medical_history, result, s3_filename):
         logger.info(f"Data stored in DynamoDB for user {username}")
         return response
     except Exception as e:
-        logger.error("Error storing data in DynamoDB: %s"e)
+        logger.error("Error storing data in DynamoDB: %s",e)
         return None
 def retrieve_analysis_history(username):
     """Retrieve most recent analysis history for a user."""

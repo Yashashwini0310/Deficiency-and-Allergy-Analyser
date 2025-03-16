@@ -17,6 +17,3 @@ Thumbs.db
 build/
 dist/
 *.egg-info/
-
-; # Django migrations
-; **/migrations/*

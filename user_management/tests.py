@@ -1,4 +1,4 @@
-"""Test file to test if the dashboard is retrieving the data and analysing the condition, 
+"""Test file to test if the dashboard is retrieving the data and analysing the condition,
 also by sending sqs and sns
 """
 from django.test import TestCase, Client
@@ -6,7 +6,9 @@ from django.contrib.auth.models import User
 from unittest.mock import patch
 from user_management.models import UserProfile
 class DashboardViewTest(TestCase):
+    """runs tests by creating a testuser, sending sns, analyzing symptom"""
     def setUp(self):
+        """testuser client is created for testing"""
         self.client = Client()
         self.user = User.objects.create_user(username="testuser", password="testpass")
         self.client.login(username="testuser", password="testpass")
@@ -30,4 +32,4 @@ class DashboardViewTest(TestCase):
         })
         self.assertEqual(response.status_code, 200)  # Check if the response is successful
         mock_invoke_lambda.assert_called_once()  # Check if the Lambda function was called
-        self.assertContains(response, "Allergy")  # Check if the response contains the expected condition
+        self.assertContains(response, "Allergy")  # Check if the response contains the expec cond

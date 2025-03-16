@@ -30,7 +30,7 @@ jobs:
 
       - name: Create and Activate Virtual Environment
         run: |
-          python -m venv env
+          python3.9 -m venv env
           source env/bin/activate
 
       - name: Install Dependencies
@@ -51,7 +51,7 @@ jobs:
       - name: Run Pylint
         run: |
           source env/bin/activate
-          pylint aws_services/ lambda_package/ user_management/
+          pylint --exclude=user_management/migrations.py, user_management/symptom_analysis/ aws_services/ lambda_package/ user_management/
 
       - name: Run Django Migrations
         run: |

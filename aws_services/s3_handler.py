@@ -1,8 +1,7 @@
 """Integrating s3 to store the files generated"""
 import logging
-import os
 import boto3
-from django.conf import settings
+# from django.conf import settings
 logger = logging.getLogger(__name__)
 AWS_REGION = "us-east-1"
 BUCKET_NAME = "allergy-analyzer-reports"
@@ -12,11 +11,11 @@ def upload_to_s3(file_path, s3_filename):
     try:
         with open(file_path, 'rb') as data: #opens the file in binary read mode
             s3_client.upload_fileobj(data, BUCKET_NAME, s3_filename) #uploads file object to s3
-        file_url = f"https://{BUCKET_NAME}.s3.{AWS_REGION}.amazonaws.com/{s3_filename}" 
+        file_url = f"https://{BUCKET_NAME}.s3.{AWS_REGION}.amazonaws.com/{s3_filename}"
         logger.info(f"File uploaded to S3: {file_url}") #logging success of upload
         return file_url #returns s3 file url
     except Exception as e:
-        logger.error(f"Error uploading file to S3: {e}") #logs upload error
+        logger.error("Error uploading file to S3: %s",e) #logs upload error
         return None
 #
 def download_from_s3(s3_filename, local_path):
@@ -26,5 +25,5 @@ def download_from_s3(s3_filename, local_path):
         logger.info(f"File downloaded from S3: {local_path}") #logs success of file download
         return local_path #returns the local file path
     except Exception as e:
-        logger.error(f"Error downloading file from S3: {e}") #logs if any error while downloading
+        logger.error("Error downloading file from S3: %s",e) #logs if any error while downloading
         return None

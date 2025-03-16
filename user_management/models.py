@@ -1,3 +1,4 @@
+""" Models file for userprofile, allergy and deficiency"""
 from django.contrib.auth.models import User
 from django.db import models
 class UserProfile(models.Model):
@@ -8,7 +9,7 @@ class UserProfile(models.Model):
     symptoms = models.TextField(blank=True, null=True)  # Store symptoms can be blank or null
     severity_level = models.IntegerField(blank=True, null=True) # Store severity can be blank/null
     medical_history = models.TextField(blank=True, null=True)  # Store medical history
-    report_url = models.CharField(max_length=255, blank=True, null=True) #for s3 url 
+    report_url = models.CharField(max_length=255, blank=True, null=True) #for s3 url
     def __str__(self):
         return self.user.username #returns the username for string representation
 class Allergy(models.Model):

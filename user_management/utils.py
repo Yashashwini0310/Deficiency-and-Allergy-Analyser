@@ -20,6 +20,6 @@ def generate_presigned_url(bucket_name, object_name, expiration=3600):
             ExpiresIn=expiration) #url's expiration time is set
         logger.info(f"Generated pre-signed URL for {object_name}") #logs success url generation
     except Exception as e:
-        logger.error(f"Error generating pre-signed URL: {e}")#else error logs
+        logger.error("Error generating pre-signed URL: %s",e)#else error logs
         return None
     return response

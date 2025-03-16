@@ -2,7 +2,7 @@
 specifies the urls available in the project
 """
 from rest_framework.authtoken.views import obtain_auth_token
-from rest_framework.routers import DefaultRouter
+# from rest_framework.routers import DefaultRouter
 from django.urls import path, include
 from .views import (
     user_register, user_login, user_logout, dashboard,

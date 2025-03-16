@@ -14,7 +14,7 @@ def get_sqs_queue_url():
         response = sqs_client.get_queue_url(QueueName=SQS_QUEUE_NAME)
         return response["QueueUrl"]
     except Exception as e:
-        logger.error(f"Error fetching SQS queue URL: {e}") # Log the error
+        logger.error("Error fetching SQS queue URL: %s", e) # Log the error
         return None
 #
 def send_message_to_sqs(message_body):
@@ -31,7 +31,7 @@ def send_message_to_sqs(message_body):
         print(f"Message sent to SQS: {response['MessageId']}")
         return True # Indicate successful message sending
     except Exception as e:
-        logger.error(f"Error sending message to SQS: {e}")
+        logger.error("Error sending message to SQS: %s", e)
         return False # Indicate failure to send message
 #
 def receive_sqs_messages():
@@ -49,11 +49,11 @@ def receive_sqs_messages():
             WaitTimeSeconds=10
         )
         # Safely accessess in case 'Messages' key was missing
-        messages_data = response.get("Messages", []) 
+        messages_data = response.get("Messages", [])
         for msg_data in messages_data:
-            #Inner try-except for processing each message 
+            #Inner try-except for processing each message
             #to prevent one bad message from stopping all
-            try: 
+            try:
                 message_body = msg_data['Body'] # Extract message body
                 parsed_body = json.loads(message_body)  # Parsing JSON here
                 messages_list.append(parsed_body) # Addding to list
@@ -66,17 +66,17 @@ def receive_sqs_messages():
                 # Log deletion
                 print(f"Deleted SQS Message with ReceiptHandle: {msg_data['ReceiptHandle']}")
             except json.JSONDecodeError:
-                logger.error(f"Error decoding JSON in SQS message, ReceiptHandle: {msg_data.get('ReceiptHandle', 'N/A')}", exc_info=True)
+                logger.error(f"Error decoding, ReceiptHandle: {msg_data.get('ReceiptHandle', 'N/A')}", exc_info=True)
                 messages_list.append({"error": "Invalid JSON message received."})
             except Exception as processing_error:
                 # Log error for individual message processing
                 logger.error(f"Error processing SQS message: {processing_error}, ReceiptHandle: {msg_data.get('ReceiptHandle', 'N/A')}", exc_info=True)
                 messages_list.append({"error": "Error processing message."})
     except Exception as e:
-        logger.error(f"Error retrieving or processing SQS messages: {e}") # Log detailed error
+        logger.error("Error retrieving or processing SQS messages: %s", e) # Log detailed error
         # User-friendly error message to display on dashboard
         messages_list = ["Error retrieving system messages. Please check logs."]
 # Return the list of messages (could be empty or contain error message in case of failure)
-    return messages_list 
+    return messages_list
 if __name__ == "__main__":
     receive_sqs_messages()

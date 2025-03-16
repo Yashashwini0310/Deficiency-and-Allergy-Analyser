@@ -14,7 +14,7 @@
 # }
 
 # data.py
-
+"""Data for analyzing symptom"""
 # Mapping of symptoms to conditions, severity, and recommendations
 SYMPTOM_CONDITION_MAPPING = {
     "fever": {

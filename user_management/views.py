@@ -1,24 +1,23 @@
-from django.http import HttpResponse
+""" Views file for dashboard, api and symptom analysis """
 import json
 import logging
 import os
 import boto3
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth import authenticate, login, logout
+from django.shortcuts import (render, redirect, get_object_or_404)
+from django.contrib.auth import (authenticate, login, logout)
 from django.contrib.auth.decorators import login_required
-from .symptom_analysis.analyzer import analyze_symptoms
-from .models import UserProfile, Allergy, Deficiency
-from rest_framework import generics, viewsets, status
+from rest_framework import ( generics, viewsets, status )
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
-from rest_framework.decorators import api_view, permission_classes
-from .serializers import UserProfileSerializer, AllergySerializer, DeficiencySerializer
+from rest_framework.decorators import (api_view, permission_classes)
+from .models import UserProfile, Allergy, Deficiency
+from .serializers import (UserProfileSerializer, AllergySerializer, DeficiencySerializer)
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
-from django.http import JsonResponse
-from rest_framework.authtoken.models import Token 
+from django.http import ( JsonResponse, HttpResponse )
+from rest_framework.authtoken.models import Token
 from django.conf import settings
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import letter
@@ -26,16 +25,17 @@ from reportlab.lib.units import inch
 from aws_services.sqs_handler import receive_sqs_messages, send_message_to_sqs
 from aws_services.sns_handler import send_sns_alert
 from aws_services.s3_handler import upload_to_s3
-from .utils import generate_presigned_url
 from aws_services.dynamodb_handler import store_analysis, retrieve_analysis_history
+from .symptom_analysis.analyzer import analyze_symptoms
+from .utils import generate_presigned_url
 from .forms import UserRegistrationForm, UserLoginForm, AllergyForm, DeficiencyForm
 # AWS Configuration
 AWS_REGION = "us-east-1"
 AWS_LAMBDA_FUNCTION_NAME = "SymptomAnalysisLambda"
 lambda_client = boto3.client("lambda", region_name=AWS_REGION)
 
-"""defining a home page"""
 def home(request):
+    """defining a home page"""
     return render(request, 'home.html') #render the home page if the user is not logged in.
 #
 # CloudWatch Logger
@@ -43,6 +43,7 @@ logger = logging.getLogger("django")
 #
 #Lambda Invocation Function
 def invoke_lambda(symptoms, medical_history):
+    """Views for invoking lambda for analysis"""
     payload = {
         "body": json.dumps({
             "symptoms": symptoms,
@@ -64,11 +65,12 @@ def invoke_lambda(symptoms, medical_history):
             "recommendation": result.get("recommendation", [])
         }
     except Exception as e:
-        logger.error(f"Lambda invocation error: {e}")
+        logger.error("Lambda invocation error: %s", e)
         return {"error": "Failed to process request"}
 # user Login API
 @csrf_exempt
 def api_user_login(request):
+    """api login view"""
     if request.method == "POST":
         data = json.loads(request.body)
         username = data.get("username")
@@ -143,13 +145,13 @@ def dashboard(request):
                 c.save()
                 logger.info(f"PDF report created: {report_path}")
             except Exception as e:
-                logger.error(f"Error creating PDF report: {e}")
+                logger.error("Error creating PDF report: %s",e)
                 return render(request, "user_management/dashboard.html", {"error": "Error creating PDF report."})
             #uploads the report file to s3 and generate preseigned URL
             upload_to_s3(report_path, report_filename)
             s3_url = generate_presigned_url(settings.AWS_STORAGE_BUCKET_NAME, report_filename)
             # Store analysis in DynamoDB
-            store_analysis(request.user.username, symptoms_str, 
+            store_analysis(request.user.username, symptoms_str,
             medical_history_str, result, report_filename)
             # Fetches previous analysis history
             analysis_history = retrieve_analysis_history(request.user.username)
@@ -160,7 +162,7 @@ def dashboard(request):
                     # logger.info(f"Saving report URL to profile: {s3_url}") #debugging
                     user_profile.report_url = s3_url
                     user_profile.save()
-                    # logger.info(f"Report URL saved to profile.") #debugging to see if the file saved
+                    # logger.info(f"Report URL saved to profile.") #debugging to see if file saved
                 except UserProfile.DoesNotExist:
                     logger.error(f"UserProfile does not exist for user: {request.user.username}")
     # Log the report URL for debugging
@@ -180,7 +182,8 @@ def dashboard(request):
 # API View for Symptom Submission (Calls Lambda)
 @method_decorator(csrf_exempt, name="dispatch")
 class SymptomSubmissionAPIView(APIView):
-    authentication_classes = [TokenAuthentication] 
+    """symptom submission api"""
+    authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
     def post(self, request):
         symptoms = request.data.get("symptoms", [])
@@ -190,10 +193,12 @@ class SymptomSubmissionAPIView(APIView):
             return Response({"error": "Symptoms are required"}, status=400)
         # Invoke Lambda
         result = invoke_lambda(symptoms, medical_history)
-        logger.info(f"User: {request.user.username} | Symptoms: {symptoms} | Medical History: {medical_history} | Lambda Result: {result}")
+        logger.info(f"User: {request.user.username} |
+        Symptoms: {symptoms} | Medical History: {medical_history} | Lambda Result: {result}")
         return Response(result, status=200)
 # User Registration View
 def user_register(request):
+    """user register view """
     if request.method == 'POST':
         form = UserRegistrationForm(request.POST)
         if form.is_valid():
@@ -205,6 +210,7 @@ def user_register(request):
 # User Login View
 @login_required
 def user_login(request):
+    """user login view"""
     if request.method == 'POST':
         form = UserLoginForm(request.POST)
         if form.is_valid():
@@ -222,15 +228,18 @@ def user_login(request):
 # User Logout View
 @login_required
 def user_logout(request):
+    """User view for logout"""
     logout(request)
     return redirect('login')
 # CRUD for Allergy
 @login_required
 def allergy_list(request):
+    """dashboard view for allergy list"""
     allergies = Allergy.objects.all()
     return render(request, 'user_management/allergy_list.html', {'allergies': allergies})
 @login_required
 def allergy_create(request):
+    """dashboard view for allergy creation"""
     if request.method == 'POST':
         form = AllergyForm(request.POST)
         if form.is_valid():
@@ -241,6 +250,7 @@ def allergy_create(request):
     return render(request, 'user_management/allergy_form.html', {'form': form})
 @login_required
 def allergy_update(request, pk):
+    """dashboard view for allergy modification"""
     allergy = get_object_or_404(Allergy, pk=pk)
     if request.method == 'POST':
         form = AllergyForm(request.POST, instance=allergy)
@@ -252,6 +262,7 @@ def allergy_update(request, pk):
     return render(request, 'user_management/allergy_form.html', {'form': form})
 @login_required
 def allergy_delete(request, pk):
+    """dashboard view for allergy deletion"""
     allergy = get_object_or_404(Allergy, pk=pk)
     if request.method == 'POST':
         allergy.delete()
@@ -260,10 +271,12 @@ def allergy_delete(request, pk):
 # CRUD for Deficiency
 @login_required
 def deficiency_list(request):
+    """dashboard view for deficiency list"""
     deficiencies = Deficiency.objects.all()
     return render(request, 'user_management/deficiency_list.html', {'deficiencies': deficiencies})
 @login_required
 def deficiency_create(request):
+    """dashboard view for deficiency creation"""
     if request.method == 'POST':
         form = DeficiencyForm(request.POST)
         if form.is_valid():
@@ -274,6 +287,7 @@ def deficiency_create(request):
     return render(request, 'user_management/deficiency_form.html', {'form': form})
 @login_required
 def deficiency_update(request, pk):
+    """dashboard view for deficiency modification"""
     deficiency = get_object_or_404(Deficiency, pk=pk)
     if request.method == 'POST':
         form = DeficiencyForm(request.POST, instance=deficiency)
@@ -285,6 +299,7 @@ def deficiency_update(request, pk):
     return render(request, 'user_management/deficiency_form.html', {'form': form})
 @login_required
 def deficiency_delete(request, pk):
+    """dashboard view for deficiency deletion"""
     deficiency = get_object_or_404(Deficiency, pk=pk)
     if request.method == 'POST':
         deficiency.delete()
@@ -293,6 +308,7 @@ def deficiency_delete(request, pk):
 @method_decorator(csrf_exempt, name='dispatch')
 # API to fetch and update user profile (including symptoms & medical history)
 class UserProfileAPIView(APIView):
+    """API to fetch and update user profile (including symptoms & medical history)"""
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
     def get(self, request):
@@ -311,17 +327,20 @@ class UserProfileAPIView(APIView):
         return Response({"message": "Symptoms updated successfully", "analysis": result})
 # API to fetch all allergies
 class AllergyListAPIView(generics.ListCreateAPIView):
+    """API for allergy list view """
     queryset = Allergy.objects.all()
     serializer_class = AllergySerializer
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 # API to fetch all deficiencies
 class DeficiencyListAPIView(generics.ListCreateAPIView):
+    """API for deficiency list view"""
     queryset = Deficiency.objects.all()
     serializer_class = DeficiencySerializer
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 class ProtectedAPIView(APIView):
+    """API to authenticate user"""
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
     def get(self, request):
@@ -329,4 +348,3 @@ class ProtectedAPIView(APIView):
 #test endpoint for symptom submission
 #Cloudwatch loggings below
 #ogging to track API requests and errors
-

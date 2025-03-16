@@ -1,10 +1,10 @@
+"""
+Form for user registration
+"""
 from django import forms
 from django.contrib.auth.models import User
 from .models import UserProfile, Allergy, Deficiency
 class UserRegistrationForm(forms.ModelForm):
-    """
-    Form for user registration
-    """
     password = forms.CharField(widget=forms.PasswordInput())
     symptoms = forms.CharField(widget=forms.Textarea(), required=False)
     medical_history = forms.CharField(widget=forms.Textarea(), required=False)

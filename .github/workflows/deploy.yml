@@ -41,6 +41,7 @@ jobs:
           pip install -r requirements.txt
           pip install pylint
           pip install pylint-django
+          pip install moto
 
       - name: Set Environment Variables
         run: |

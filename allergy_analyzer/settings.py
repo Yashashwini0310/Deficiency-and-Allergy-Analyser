@@ -24,7 +24,7 @@ ALLOWED_HOSTS = [
     '2f521d3645d74cdab041e37bb264d2b3.vfs.cloud9.us-east-1.amazonaws.com',
     '127.0.0.1',
     'localhost',
-    '0.0.0.0']
+    'allergyanalyzersystem-env.eba-eyus5yb4.us-east-1.elasticbeanstalk.com',]
 
 # Application definition
 

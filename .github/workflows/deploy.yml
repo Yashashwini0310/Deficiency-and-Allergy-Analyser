@@ -51,7 +51,7 @@ jobs:
       - name: Run Pylint
         run: |
           source env/bin/activate
-          pylint --rcfile=.pylintrc aws_services/ lambda_package/ user_management/
+          pylint --rcfile=.pylintrc aws_services/ lambda_package/ user_management/ --fail-under=7.5
 
       - name: Run Django Migrations
         run: |

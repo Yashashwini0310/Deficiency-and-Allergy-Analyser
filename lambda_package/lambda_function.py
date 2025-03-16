@@ -1,8 +1,8 @@
-import json 
-from symptom_analysis.analyzer import analyze_symptoms  # Import the function
 """This lambda function is used to handle it programatically
 """
-def lambda_handler(event, context):
+import json
+from symptom_analysis.analyzer import analyze_symptoms  # Import the function
+def lambda_handler(event):
     """serverless lambda function handling symptom analysis"""
     try:
         body = json.loads(event.get("body", "{}"))

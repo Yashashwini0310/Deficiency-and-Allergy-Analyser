@@ -81,7 +81,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'allergy_analyzer.wsgi.application'
 
-
+LOGIN_REDIRECT_URL = 'dashboard'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
@@ -151,9 +151,9 @@ AWS_CLOUDWATCH_GROUP = "LogsForAllergyAnalyzer" #log group name
 AWS_CLOUDWATCH_STREAM = "ApplicationLogs"
 AWS_REGION = "us-east-1"
 
-# Initialize Boto3 CloudWatch Logs Client
+# # Initialize Boto3 CloudWatch Logs Client
 # boto3_client = boto3.client("logs", region_name=AWS_REGION)
-#configuring logging below
+# # configuring logging below
 # LOGGING = {
 #     "version": 1,
 #     "disable_existing_loggers": False,
@@ -163,7 +163,6 @@ AWS_REGION = "us-east-1"
 #             "class": "watchtower.CloudWatchLogHandler",
 #             "log_group_name": AWS_CLOUDWATCH_GROUP,
 #             "stream_name": AWS_CLOUDWATCH_STREAM,
-#             "region_name": AWS_REGION,
 #         },
 #     },
 #     "loggers": {
@@ -174,7 +173,7 @@ AWS_REGION = "us-east-1"
 #         },
 #     },
 # }
- # Setup Logging
+# #   Setup Logging
 # try:
 #     logging.basicConfig(level=logging.INFO)
 #     logger = logging.getLogger("django")

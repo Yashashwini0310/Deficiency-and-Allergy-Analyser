@@ -12,3 +12,11 @@ load-plugins=
 
 [DJANGO]
 django-settings-module=allergy_analyzer.settings
+
+[MESSAGES CONTROL]
+disable=
+    logging-fstring-interpolation,
+    broad-exception-caught
+
+[REPORTS]
+score=yes

@@ -4,6 +4,9 @@ ignore-patterns=
     user_management/migrations/
     env/
     manage.py/
+
+ignore=migrations,symptom_analysis
+
 load-plugins=
     pylint_django
 

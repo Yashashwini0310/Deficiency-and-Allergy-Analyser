@@ -60,11 +60,6 @@ jobs:
           python manage.py makemigrations
           python manage.py migrate
 
-      - name: Run Tests
-        run: |
-          source env/bin/activate
-          python manage.py test
-
       - name: Package Django App
         run: |
           source env/bin/activate

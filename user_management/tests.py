@@ -5,7 +5,6 @@ from django.test import TestCase, Client
 from django.contrib.auth.models import User
 from unittest.mock import patch
 from user_management.models import UserProfile
-from moto import mock_sqs, mock_sns
 class DashboardViewTest(TestCase):
     """runs tests by creating a testuser, sending sns, analyzing symptom"""
     def setUp(self):
@@ -19,8 +18,7 @@ class DashboardViewTest(TestCase):
         response = self.client.get("/api/dashboard/")
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "user_management/dashboard.html")
-    @mock_sqs
-    @mock_sns
+
     @patch("user_management.views.invoke_lambda")
     def test_dashboard_post_request(self, mock_invoke_lambda):
         """Test dashboard POST request with symptom input"""

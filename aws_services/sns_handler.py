@@ -1,5 +1,5 @@
-import boto3
 """ SNS handler to get and send messages to alert the user """
+import boto3
 AWS_REGION = "us-east-1"
 SNS_TOPIC_NAME = "SymptomAlertsTopic"
 sns_client = boto3.client("sns", region_name=AWS_REGION) #create sns client

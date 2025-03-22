@@ -25,6 +25,7 @@ from reportlab.lib.units import inch
 from aws_services.sqs_handler import receive_sqs_messages, send_message_to_sqs
 from aws_services.sns_handler import send_sns_alert
 from aws_services.s3_handler import upload_to_s3
+from aws_services.sns_subscription import subscribe_user
 from aws_services.dynamodb_handler import store_analysis, retrieve_analysis_history
 from .symptom_analysis.analyzer import analyze_symptoms
 from .utils import generate_presigned_url
@@ -347,3 +348,16 @@ class ProtectedAPIView(APIView):
 #test endpoint for symptom submission
 #Cloudwatch loggings below
 #ogging to track API requests and errors
+@login_required()
+def subscribe_sns(request):
+    """Handles SNS subscription when user submits email and phone number."""
+    if request.method == "POST":
+        email = request.POST.get("email")
+        phone = request.POST.get("phone")
+
+        if subscribe_user(email=email, phone=phone):
+            return HttpResponse(f"Subscription request sent. Please check your email to confirm.")
+        else:
+            return HttpResponse("Failed to subscribe. Please try again later.", status=400)
+    
+    return render(request, "subscribe.html")

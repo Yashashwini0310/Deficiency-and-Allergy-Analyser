@@ -1,4 +1,4 @@
-"""SQS handler file to log errors and send the messages to the user"""
+"""SQS handler file to log errors and send the messages to the user through webpage"""
 import json
 import logging
 import boto3

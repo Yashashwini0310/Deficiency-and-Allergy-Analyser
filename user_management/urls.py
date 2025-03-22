@@ -7,7 +7,7 @@ from django.urls import path, include
 from .views import (
     user_register, user_login, user_logout, dashboard,
     UserProfileAPIView, AllergyListAPIView, DeficiencyListAPIView,
-    SymptomSubmissionAPIView, api_user_login
+    SymptomSubmissionAPIView, api_user_login, subscribe_sns
 )
 from . import views
 urlpatterns = [
@@ -32,4 +32,6 @@ urlpatterns = [
     path('deficiencies/', DeficiencyListAPIView.as_view(), name='deficiency-list-api'),
     path('symptoms/', SymptomSubmissionAPIView.as_view(), name='symptoms-submit-api'),
     path('api/token/', obtain_auth_token, name='api-token'),
+    #SNS subscribe button
+    path("subscribe/", subscribe_sns, name="subscribe_sns"),
 ]

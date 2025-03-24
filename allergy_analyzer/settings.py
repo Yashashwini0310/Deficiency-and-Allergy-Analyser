@@ -128,7 +128,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 STATIC_URL = 'static/'
-
+STATIC_ROOT ='static'
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
@@ -152,35 +152,35 @@ AWS_CLOUDWATCH_STREAM = "ApplicationLogs"
 AWS_REGION = "us-east-1"
 
 # # Initialize Boto3 CloudWatch Logs Client
-# boto3_client = boto3.client("logs", region_name=AWS_REGION)
+boto3_client = boto3.client("logs", region_name=AWS_REGION)
 # # configuring logging below
-# LOGGING = {
-#     "version": 1,
-#     "disable_existing_loggers": False,
-#     "handlers": {
-#         "watchtower": {
-#             "level": "INFO",
-#             "class": "watchtower.CloudWatchLogHandler",
-#             "log_group_name": AWS_CLOUDWATCH_GROUP,
-#             "stream_name": AWS_CLOUDWATCH_STREAM,
-#         },
-#     },
-#     "loggers": {
-#         "django": {
-#             "handlers": ["watchtower"],
-#             "level": "INFO",
-#             "propagate": True,
-#         },
-#     },
-# }
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "watchtower": {
+            "level": "INFO",
+            "class": "watchtower.CloudWatchLogHandler",
+            "log_group_name": AWS_CLOUDWATCH_GROUP,
+            "stream_name": AWS_CLOUDWATCH_STREAM,
+        },
+    },
+    "loggers": {
+        "django": {
+            "handlers": ["watchtower"],
+            "level": "INFO",
+            "propagate": True,
+        },
+    },
+}
 # #   Setup Logging
-# try:
-#     logging.basicConfig(level=logging.INFO)
-#     logger = logging.getLogger("django")
-#     logger.addHandler(watchtower.CloudWatchLogHandler(log_group=AWS_CLOUDWATCH_GROUP,stream_name=AWS_CLOUDWATCH_STREAM))
-#     logger.info("CloudWatch logging configured successfully.")
-# except Exception as e:
-#     logging.error(f"Error configuring CloudWatch logging: {e}")
+try:
+    logging.basicConfig(level=logging.INFO)
+    logger = logging.getLogger("django")
+    logger.addHandler(watchtower.CloudWatchLogHandler(log_group=AWS_CLOUDWATCH_GROUP,stream_name=AWS_CLOUDWATCH_STREAM))
+    logger.info("CloudWatch logging configured successfully.")
+except Exception as e:
+    logging.error(f"Error configuring CloudWatch logging: {e}")
     
 
 # AWS S3 Settings

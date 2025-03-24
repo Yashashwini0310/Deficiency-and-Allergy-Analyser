@@ -63,7 +63,4 @@ jobs:
       - name: Package Django App
         run: |
           source env/bin/activate
-          mkdir packaged_app
-          cp -r allergy_analyzer/ packaged_app/
-          cp manage.py packaged_app/
-          zip -r packaged_app.zip packaged_app
+          python manage.py test

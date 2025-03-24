@@ -1,10 +1,14 @@
 """Test file to test if the dashboard is retrieving the data and analysing the condition,
 also by sending sqs and sns
 """
+import django
+import os
 from django.test import TestCase, Client
 from django.contrib.auth.models import User
 from unittest.mock import patch
 from user_management.models import UserProfile
+os.environ['DJANGO_SETTINGS_MODULE'] = 'allergy_analyzer.settings'
+django.setup()
 class DashboardViewTest(TestCase):
     """runs tests by creating a testuser, sending sns, analyzing symptom"""
     def setUp(self):

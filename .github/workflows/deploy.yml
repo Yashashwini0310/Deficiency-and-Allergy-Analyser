@@ -53,14 +53,23 @@ jobs:
         run: |
           source env/bin/activate
           pylint --rcfile=.pylintrc aws_services/ lambda_package/ user_management/ --fail-under=7.5
+      
+      - name: Run tests
+        run: |
+          source env/bin/activate
+          python manage.py test
 
       - name: Run Django Migrations
         run: |
           source env/bin/activate
           python manage.py makemigrations
           python manage.py migrate
-
+          
       - name: Package Django App
         run: |
           source env/bin/activate
-          python manage.py test
+          mkdir packaged_app
+          cp -r allergy_analyzer/ packaged_app/
+          cp manage.py packaged_app/
+          zip -r packaged_app.zip packaged_app
+      

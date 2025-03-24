@@ -24,7 +24,11 @@ ALLOWED_HOSTS = [
     '2f521d3645d74cdab041e37bb264d2b3.vfs.cloud9.us-east-1.amazonaws.com',
     '127.0.0.1',
     'localhost',
-    'allergyanalyzersystem-env.eba-eyus5yb4.us-east-1.elasticbeanstalk.com',]
+    'allergyanalyzersystem-env.eba-eyus5yb4.us-east-1.elasticbeanstalk.com',
+    '172.31.12.67',
+    'awseb--awseb-6zaysprd7qba-702008610.us-east-1.elb.amazonaws.com',
+    
+    ]
 
 # Application definition
 
@@ -42,7 +46,9 @@ INSTALLED_APPS = [
 ]
 CSRF_TRUSTED_ORIGINS = [
     "https://2f521d3645d74cdab041e37bb264d2b3.vfs.cloud9.us-east-1.amazonaws.com",
-    "http://2f521d3645d74cdab041e37bb264d2b3.vfs.cloud9.us-east-1.amazonaws.com"
+    "http://2f521d3645d74cdab041e37bb264d2b3.vfs.cloud9.us-east-1.amazonaws.com",
+    "https://allergyanalyzersystem-env.eba-eyus5yb4.us-east-1.elasticbeanstalk.com",
+    "http://allergyanalyzersystem-env.eba-eyus5yb4.us-east-1.elasticbeanstalk.com",
 ]
 
 
@@ -58,7 +64,8 @@ MIDDLEWARE = [
 ]
 
 CORS_ALLOWED_ORIGINS = [
-    "https://2f521d3645d74cdab041e37bb264d2b3.vfs.cloud9.us-east-1.amazonaws.com"
+    "https://2f521d3645d74cdab041e37bb264d2b3.vfs.cloud9.us-east-1.amazonaws.com",
+    "https://allergyanalyzersystem-env.eba-eyus5yb4.us-east-1.elasticbeanstalk.com"
 ]
 CORS_ALLOW_CREDENTIALS = True #app requires authenticated API requests, so CORS must allow credentials.
 ROOT_URLCONF = 'allergy_analyzer.urls'

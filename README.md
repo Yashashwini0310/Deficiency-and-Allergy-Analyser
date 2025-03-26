@@ -39,6 +39,44 @@ Custom Library:
 # This Project is Deployed in AWS using Elastic Beanstalk:
     http://allergyanalyzersystem-env.eba-eyus5yb4.us-east-1.elasticbeanstalk.com/
 
+# About AWS services used in this project and reason for them:
+# # # 1. AWS Elastic Beanstalk:
+# purpose:
+Elastic beanstalk simplifies the scaling, management and deployment of web applications.
+# Why was it used: 
+Easy deployment
+Built-in Monitoring facility.
+
+# # # 2. AWS Simple Notification Service (SNS):
+# purpose:
+SNS is a messaging service providing facility to alert users via email/SMS.
+# why was this used:
+It provides easy subscription.
+Messages are reliable.
+Real-time Alerts to users.
+
+# # # 3. AWS Simple Queue Service (SQS)
+# purpose:
+SQS is a queuing system used to handle the processing of messages.
+
+# why was this used:
+Ensures asynchronous processing like when users enter symptoms the analysis requests are queued.
+Preventing overloading of messages.
+Reliable delivery of message processing.
+
+# # # 4. AWS DynamoDB
+# purpose:
+DynamoDB is a NoSQL database for storing user data and their symptom history.
+
+# why was this used:
+Scalability - Scales automatically based on the loads.
+high availability as data is being replicated across many AWS regions.
+No need for the database maangement
+
+# # # 5. S3 (Simple Storage Service)
+# purpose:
+S3 provides storage facilities in AWS for files generated from the analysis on the dashboard.
+
 # Setup Instructions: (Cloud9 is used for this project)
 
 # 1. Clone the repository:
@@ -52,7 +90,7 @@ python -m venv env
 source env/bin/activate (linux based project)
 pip install -r requirements.txt
 
-# 3. setup AWS credentials using boto3.
+# 3. If using Learners lab, check if these AWS are accessible and setup AWS credentials using boto3 accordingly
 
 # 4. Run the application locally first:
 
@@ -62,13 +100,27 @@ python manage.py runserver 8080
 # 5. Lastly, Deploy to Elastic Beantalk:
 
 (deactivate the virtual environment and then perform below steps)
+a. install awsebcli : pip install awsebcli
 
-a. Helps in initializing the eb from terminal, you can provide any name of your choice, as this creates the function on AWS
+b. Helps in initializing the eb from terminal, you can provide any name of your choice, as this creates the function on AWS
 eb init -p python-<version> <function_name> 
 <for example: eb init -p python-3.9 AllergyAnalyzer>
 
-b Helps in deploying the environment created
+c. Helps in deploying the environment created
 eb deploy or use eb deploy AllergyAnalyzer-env
+
+d. you can open your deployed AWS domain of your project using below command
+eb open
+
+# For testing
+Run tests Locally:
+python3 manage.py test
+
+Run Pylint for Static Code Analysis locally
+if your root folder is Allergy_Analyzer:
+pylint Allergy_Analyzer
+if you want to run for each folder use:
+pylint user_management/
 
 # How to use:
 1. Register/login the application
@@ -83,3 +135,8 @@ eb deploy or use eb deploy AllergyAnalyzer-env
 --Enhance UI for more user experience
 --Add more AWS security measures.
 --Enhance the analyzer by adding robust API for more accurate results.
+
+
+# Author : Yashashwini
+# linkedIn : https://www.linkedin.com/in/yashashwini-s-485283190/
+

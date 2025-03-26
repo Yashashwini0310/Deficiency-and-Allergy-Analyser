@@ -63,10 +63,11 @@ python manage.py runserver 8080
 
 (deactivate the virtual environment and then perform below steps)
 
-eb init -p python-<version> <function_name> (helps in initializing the eb from terminal, you can provide any name of your choice, as this creates the function on AWS)
+a. Helps in initializing the eb from terminal, you can provide any name of your choice, as this creates the function on AWS
+eb init -p python-<version> <function_name> 
 <for example: eb init -p python-3.9 AllergyAnalyzer>
 
-Helps in deploying the environment created
+b Helps in deploying the environment created
 eb deploy or use eb deploy AllergyAnalyzer-env
 
 # How to use:

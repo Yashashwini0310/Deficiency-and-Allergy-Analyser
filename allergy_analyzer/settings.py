@@ -89,6 +89,8 @@ TEMPLATES = [
 WSGI_APPLICATION = 'allergy_analyzer.wsgi.application'
 
 LOGIN_REDIRECT_URL = 'dashboard'
+LOGOUT_REDIRECT_URL = "/users/login/"
+
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 

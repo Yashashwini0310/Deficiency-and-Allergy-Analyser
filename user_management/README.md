@@ -21,4 +21,5 @@ previous version of python library had less symptoms.
 New library has a set of known symptoms to check
 
 Date: 13-03
+https://pypi.org/project/symptom-analysis/1.0.2/
 Import functions tested successfully

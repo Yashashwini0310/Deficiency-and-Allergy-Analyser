@@ -13,6 +13,7 @@ def store_analysis(username, symptoms, medical_history, result, s3_filename):
     """Store analysis data in DynamoDB."""
     timestamp = datetime.datetime.utcnow().isoformat()
     try:
+        logger.info(f"Attempting to store data in DynamoDB for user: {username}")
         response = table.put_item(
             Item={
                 "username": username,
@@ -23,10 +24,10 @@ def store_analysis(username, symptoms, medical_history, result, s3_filename):
                 "s3_filename": s3_filename #storing s3_filename for later retrieval
             }
         )
-        logger.info(f"Data stored in DynamoDB for user {username}")
+        logger.info(f"Data stored in dynamodb: {response}")
         return response
     except Exception as e:
-        logger.error("Error storing data in DynamoDB: %s",e)
+        logger.error(f"Error storing data in DynamoDB:{e}")
         return None
 def retrieve_analysis_history(username):
     """Retrieve most recent analysis history for a user."""

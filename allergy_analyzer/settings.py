@@ -162,7 +162,7 @@ AWS_REGION = "us-east-1"
 
 # # Initialize Boto3 CloudWatch Logs Client
 # boto3_client = boto3.client("logs", region_name=AWS_REGION)
-# # configuring logging below
+# # # configuring logging below
 # LOGGING = {
 #     "version": 1,
 #     "disable_existing_loggers": False,

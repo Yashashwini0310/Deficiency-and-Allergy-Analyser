@@ -40,41 +40,46 @@ Custom Library:
     http://allergyanalyzersystem-env.eba-eyus5yb4.us-east-1.elasticbeanstalk.com/
 
 # About AWS services used in this project and reason for them:
-# # # 1. AWS Elastic Beanstalk:
-# purpose:
+# 1. AWS Elastic Beanstalk:
+purpose:
 Elastic beanstalk simplifies the scaling, management and deployment of web applications.
-# Why was it used: 
+Why was it used: 
 Easy deployment
 Built-in Monitoring facility.
 
-# # # 2. AWS Simple Notification Service (SNS):
-# purpose:
+# 2. AWS Simple Notification Service (SNS):
+
+purpose:
 SNS is a messaging service providing facility to alert users via email/SMS.
-# why was this used:
+
+why was this used:
 It provides easy subscription.
 Messages are reliable.
 Real-time Alerts to users.
 
-# # # 3. AWS Simple Queue Service (SQS)
-# purpose:
+# 3. AWS Simple Queue Service (SQS)
+
+purpose:
 SQS is a queuing system used to handle the processing of messages.
 
-# why was this used:
+why was this used:
 Ensures asynchronous processing like when users enter symptoms the analysis requests are queued.
 Preventing overloading of messages.
 Reliable delivery of message processing.
 
-# # # 4. AWS DynamoDB
-# purpose:
+# 4. AWS DynamoDB
+
+purpose:
 DynamoDB is a NoSQL database for storing user data and their symptom history.
 
-# why was this used:
+why was this used:
 Scalability - Scales automatically based on the loads.
 high availability as data is being replicated across many AWS regions.
 No need for the database maangement
 
-# # # 5. S3 (Simple Storage Service)
-# purpose:
+# 5. S3 (Simple Storage Service)
+
+purpose:
 S3 provides storage facilities in AWS for files generated from the analysis on the dashboard.
 
 # Setup Instructions: (Cloud9 is used for this project)
@@ -124,11 +129,16 @@ pylint user_management/
 
 # How to use:
 1. Register/login the application
-2. Enter Symtoms and get your report on possible results (deficiencies/allergy)
+2. Enter Symtoms (example: Fever, headache, fatigue, chest pain, cough) 
+   Enter your Medical history if available (eg. diabetes, Heart Disease, Hypertension, Asthma) 
+   Get your report on possible results (deficiencies/allergy)
 3. Subscribe to SNS alerts for notifications.
 4. Accept the request on your mail. 
 5. You will be notified everytime your symptoms are entered
 6. you can also view SQS queue in the application.
+
+# Please Note 
+This project has manual datasets provided for the analysis. Hence the medical history is limited, you can provide above example medical history for testing.
 
 # Known Issues and future Enhancements:
 --Expand medical history database for better recommendations.

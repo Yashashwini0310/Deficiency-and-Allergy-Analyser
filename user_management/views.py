@@ -112,9 +112,9 @@ def dashboard(request):
                 user_profile.save()
             except UserProfile.DoesNotExist:
                 logger.error(f"UserProfile does not exist for user: {request.user.username}")
-            # Send SNS Alert to notify about symptom report
-            alert_message = f"User {request.user.username} reported symptoms: {symptoms}"
-            send_sns_alert(alert_message)
+            # Send SNS Alert to notify users on their news
+            # alert_message = f"User {request.user.username} reported symptoms: {symptoms}"
+            send_sns_alert()
              # Invoke AWS Lambda Function for symptom analysis
             result = invoke_lambda(symptoms, medical_history)
             logger.info(f"Raw Lambda Result: {result}")

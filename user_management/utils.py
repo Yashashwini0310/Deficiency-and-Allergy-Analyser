@@ -1,6 +1,6 @@
 """ 
 pre-assigned url allow you to grant temporary access 
-to private S3 objects without sharing your AWS credentials to users.
+to private S3 objects without sharing our AWS credentials to users.
 """
 import logging
 from django.conf import settings

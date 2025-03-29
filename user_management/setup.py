@@ -1,7 +1,7 @@
 """Python setup file for custom library publication"""
 from setuptools import setup, find_packages
 setup(
-    name="symptom_analysis",  # Library name
+    name="symptom_analysis",  #library name
     version="1.0.2",
     packages=find_packages(include=["symptom_analysis", "symptom_analysis.*"]),
     install_requires=[],

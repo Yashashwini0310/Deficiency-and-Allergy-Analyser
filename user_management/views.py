@@ -19,9 +19,9 @@ from django.utils.decorators import method_decorator
 from django.http import ( JsonResponse, HttpResponse )
 from rest_framework.authtoken.models import Token
 from django.conf import settings
-from reportlab.pdfgen import canvas
+from reportlab.platypus import SimpleDocTemplate, Paragraph
+from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.pagesizes import letter
-from reportlab.lib.units import inch
 from aws_services.sqs_handler import receive_sqs_messages, send_message_to_sqs
 from aws_services.sns_handler import send_sns_alert
 from aws_services.s3_handler import upload_to_s3
@@ -137,13 +137,14 @@ def dashboard(request):
             report_filename = f"{request.user.username}_report.pdf"
             report_path = os.path.join(settings.MEDIA_ROOT, report_filename)
             try:
-                c = canvas.Canvas(report_path, pagesize=letter)
-                c.drawString(1 * inch, 10 * inch, f"Report for {request.user.username}")
-                y = 9 * inch
+                doc = SimpleDocTemplate(report_path, pagesize=letter)
+                styles = getSampleStyleSheet()
+                content = [
+                    Paragraph(f"<b>Report for {request.user.username}</b>", styles["Title"])
+                ]
                 for key, value in result.items():
-                    c.drawString(1 * inch, y, f"{key}: {value}")
-                    y -= 0.5 * inch
-                c.save()
+                    content.append(Paragraph(f"<b>{key}:</b> {value}", styles["Normal"]))
+                doc.build(content)
                 logger.info(f"PDF report created: {report_path}")
             except Exception as e:
                 logger.error("Error creating PDF report: %s",e)

@@ -49,7 +49,7 @@ purpose:<br />
 Elastic beanstalk simplifies the scaling, management and deployment of web applications.<br />
 Why was it used: <br />
 a. Easy deployment <br />
-b. Built-in Monitoring facility.<br />
+b. Built-in Monitoring facility.
 
 # 2. AWS Simple Notification Service (SNS):
 <br />

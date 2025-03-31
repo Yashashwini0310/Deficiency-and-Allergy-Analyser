@@ -70,7 +70,7 @@ why was this used:<br />
 Ensures asynchronous processing like when users enter symptoms the analysis requests are queued.<br />
 Preventing overloading of messages.<br />
 Reliable delivery of message processing.<br />
-<br />
+
 # 4. AWS DynamoDB<br />
 
 purpose:<br />
@@ -80,21 +80,21 @@ why was this used:<br />
 a. Scalability - Scales automatically based on the loads.<br />
 b. High availability as data is being replicated across many AWS regions.<br />
 c. No need for the database management<br />
-<br />
+
 # 5. S3 (Simple Storage Service)
 
 purpose:<br />
 S3 provides storage facilities in AWS for files generated from the analysis on the dashboard.<br />
-<br />
+
 # Setup Instructions: (Cloud9 is used for this project)
 
 # 1. Clone the repository:
 
 git clone https://github.com/Yashashwini0310/cpp_project.git<br />
 cd allergy-analyzer<br />
-<br />
+
 # 2. Create a virtual environment and install the dependencies:
-<br />
+
 python -m venv env<br />
 source env/bin/activate (linux based project)<br />
 pip install -r requirements.txt<br />

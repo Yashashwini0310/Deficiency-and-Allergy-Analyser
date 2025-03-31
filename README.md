@@ -34,7 +34,11 @@ For Frontend:
     --HTML, CSS
 Custom Library:
     I have created a custom library to handle the data for analysis when a user provides the symptoms on the dashboard.
-    --https://pypi.org/project/symptom-analysis/1.0.2/
+    In the Directory named lambda_package/symptom_analysis  -- 
+    a. data.py : This file has limited data to map the symptoms, conditions and recommedations to the user 
+    b. analyzer.py: This file has the logic behind analysing the symptom and medical history from the dashboard
+    pulished in pypi:
+    https://pypi.org/project/symptom-analysis/1.0.2/
 
 # This Project is Deployed in AWS using Elastic Beanstalk:
     http://allergyanalyzersystem-env.eba-eyus5yb4.us-east-1.elasticbeanstalk.com/

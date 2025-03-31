@@ -52,7 +52,7 @@ a. Easy deployment <br />
 b. Built-in Monitoring facility.
 
 # 2. AWS Simple Notification Service (SNS):
-<br />
+
 purpose:<br />
 SNS is a messaging service providing facility to alert users via email/SMS.<br />
 <br />
@@ -62,7 +62,7 @@ Messages are reliable.<br />
 Real-time Alerts to users.<br />
 <br />
 # 3. AWS Simple Queue Service (SQS)
-<br />
+
 purpose:<br />
 SQS is a queuing system used to handle the processing of messages.<br />
 <br />
@@ -72,7 +72,7 @@ Preventing overloading of messages.<br />
 Reliable delivery of message processing.<br />
 <br />
 # 4. AWS DynamoDB<br />
-<br />
+
 purpose:<br />
 DynamoDB is a NoSQL database for storing user data and their symptom history.<br />
 <br />
@@ -82,14 +82,14 @@ b. High availability as data is being replicated across many AWS regions.<br />
 c. No need for the database management<br />
 <br />
 # 5. S3 (Simple Storage Service)
-<br />
+
 purpose:<br />
 S3 provides storage facilities in AWS for files generated from the analysis on the dashboard.<br />
 <br />
 # Setup Instructions: (Cloud9 is used for this project)
-<br />
+
 # 1. Clone the repository:
-<br />
+
 git clone https://github.com/Yashashwini0310/cpp_project.git<br />
 cd allergy-analyzer<br />
 <br />

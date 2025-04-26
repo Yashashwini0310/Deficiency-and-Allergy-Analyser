@@ -155,7 +155,8 @@ This project has manual datasets provided for the analysis. Hence the medical hi
 # linkedIn : https://www.linkedin.com/in/yashashwini-s-485283190/
 <br />
 # Home Page, Login Page, Subscribe, allergy and deficieny ribbon.
-![image](https://github.com/user-attachments/assets/c04a47a3-8616-42cf-a768-b832b78c3b63)
+![image](https://github.com/user-attachments/assets/88c72963-1ab7-468f-9816-c0f5df7a9e5f)
+
 <br />
 ![image](https://github.com/user-attachments/assets/8e4254fd-6888-4db4-9684-55c2b780d248)
 <br />

@@ -156,6 +156,7 @@ This project has manual datasets provided for the analysis. Hence the medical hi
 <br />
 # Home Page, Login Page, Subscribe, allergy and deficieny ribbon.
 ![image](https://github.com/user-attachments/assets/88c72963-1ab7-468f-9816-c0f5df7a9e5f)
+![cpp_home_page](https://github.com/user-attachments/assets/36f3465c-3ffc-466e-8f6d-44236312ea44)
 
 <br />
 ![image](https://github.com/user-attachments/assets/8e4254fd-6888-4db4-9684-55c2b780d248)
